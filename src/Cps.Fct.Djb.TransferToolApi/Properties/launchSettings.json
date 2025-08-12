@@ -1,8 +1,8 @@
 {
     "profiles": {
-      "hk_ui_functions": {
+      "djb_transfertool_api": {
         "commandName": "Project",
-        "commandLineArgs": "host start --useHttps --cert \"D:\\Users\\nag.bandla\\source\\repos\\DocGen\\src\\Cps.Fct.Djb.TransferToolApi\\Properties\\server.pfx\" --password \"Hyderabad@89\" --port 7105",
+        "commandLineArgs": "host start --useHttps --cert \"D:\\Git\\g\\djb-transfer-tool\\src\\Cps.Fct.Djb.TransferToolApi\\Properties\\server.pfx\" --password \"Hyderabad@89\" --port 7105",
         "applicationUrl": "https://localhost:7105",
         "launchBrowser": false
       }

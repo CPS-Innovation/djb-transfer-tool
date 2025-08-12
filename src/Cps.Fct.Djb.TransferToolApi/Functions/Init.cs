@@ -1,21 +1,21 @@
-// <copyright file="Init.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
+// <copyright file="Init.cs" company="TheCrownProsecutionService">
+// Copyright (c) The Crown Prosecution Service. All rights reserved.
 // </copyright>
 
 namespace Cps.Fct.Djb.TransferToolApi.Functions;
 
+using System.Diagnostics;
+using System.Net;
+using System.Threading.Tasks;
+using Cps.Fct.Djb.TransferToolApi.Services.Contracts;
+using Cps.Fct.Djb.TransferToolApi.Services.Dto;
+using Cps.Fct.Hk.Common.Contracts.Logging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
-using System.Diagnostics;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
+using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using System.Net;
-using Cps.Fct.Hk.Common.Contracts.Logging;
-using Cps.Fct.Djb.TransferToolApi.Services.Dto;
-using Cps.Fct.Djb.TransferToolApi.Services.Contracts;
 
 /// <summary>
 /// Represents a function that is the entry point for the Housekeeping application,
