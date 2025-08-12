@@ -1,0 +1,10 @@
+global using Microsoft.Azure.Functions.Worker;
+global using Microsoft.Azure.Functions.Worker.Http;
+global using Cps.Fct.Hk.Common.Contracts.Abstractions;
+global using Cps.Fct.Hk.Common.Contracts.Models;
+global using Xunit;
+global using System.Reflection;
+global using System.Text;
+global using Shouldly;
+global using System.Net;
+global using Moq;
