@@ -20,6 +20,7 @@
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="2.0.0" />
     <None Include="host.json" />
     <PackageReference Include="AutoMapper" Version="14.0.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.14.0" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -29,6 +30,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Cps.Fct.Djb.TransferToolApi.Services\Cps.Fct.Djb.TransferToolApi.Services.csproj" />
+    <ProjectReference Include="..\Cps.Fct.Djb.TransferToolApi.Shared\Cps.Fct.Djb.TransferToolApi.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,11 +1,11 @@
-// <copyright file="CookieService.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
+// <copyright file="CookieService.cs" company="TheCrownProsecutionService">
+// Copyright (c) The Crown Prosecution Service. All rights reserved.
 // </copyright>
 
 namespace Cps.Fct.Djb.TransferToolApi.Services;
 
-using Cps.Fct.Hk.Common.Contracts.Logging;
 using Cps.Fct.Djb.TransferToolApi.Services.Contracts;
+using Cps.Fct.Hk.Common.Contracts.Logging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
