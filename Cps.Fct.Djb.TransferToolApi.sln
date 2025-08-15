@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cps.Fct.Djb.TransferToolApi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cps.Fct.Djb.TransferToolApi.Shared", "src\Cps.Fct.Djb.TransferToolApi.Shared\Cps.Fct.Djb.TransferToolApi.Shared.csproj", "{01A4205C-4B27-4D6C-9080-5086E204A2E7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cps.Fct.Djb.TransferToolApi.ApiClients", "src\Cps.Fct.Djb.TransferToolApi.ApiClients\Cps.Fct.Djb.TransferToolApi.ApiClients.csproj", "{C169A65B-03D5-4EDF-877D-A75DAD3B5847}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -59,6 +61,10 @@ Global
 		{01A4205C-4B27-4D6C-9080-5086E204A2E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{01A4205C-4B27-4D6C-9080-5086E204A2E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{01A4205C-4B27-4D6C-9080-5086E204A2E7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C169A65B-03D5-4EDF-877D-A75DAD3B5847}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C169A65B-03D5-4EDF-877D-A75DAD3B5847}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C169A65B-03D5-4EDF-877D-A75DAD3B5847}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C169A65B-03D5-4EDF-877D-A75DAD3B5847}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -69,6 +75,7 @@ Global
 		{F34828C3-F95D-15DE-A585-EEFA3E23CFAB} = {5841297C-02C0-40B5-8ACC-2973517F1E6A}
 		{6E235F8C-191E-8EAE-82AC-2DBFC051BA30} = {5841297C-02C0-40B5-8ACC-2973517F1E6A}
 		{01A4205C-4B27-4D6C-9080-5086E204A2E7} = {727E533C-6216-49D5-BC81-610A67AE9469}
+		{C169A65B-03D5-4EDF-877D-A75DAD3B5847} = {727E533C-6216-49D5-BC81-610A67AE9469}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {14F67FD7-458F-4B19-A785-3DF96F04979F}

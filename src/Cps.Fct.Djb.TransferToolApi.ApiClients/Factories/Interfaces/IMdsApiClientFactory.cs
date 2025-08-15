@@ -1,6 +1,8 @@
-// <copyright file="IMdsApiClientFactory.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
+// <copyright file="IMdsApiClientFactory.cs" company="TheCrownProsecutionService">
+// Copyright (c) The Crown Prosecution Service. All rights reserved.
 // </copyright>
+
+namespace Cps.Fct.Djb.TransferToolApi.ApiClients.Factories.Interfaces;
 
 using Cps.MasterDataService.Infrastructure.ApiClient;
 

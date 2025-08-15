@@ -28,4 +28,9 @@
     <PackageReference Include="Microsoft.VisualStudio.Validation" Version="17.8.8" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.6.1" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Cps.Fct.Djb.TransferToolApi.ApiClients\Cps.Fct.Djb.TransferToolApi.ApiClients.csproj" />
+    <ProjectReference Include="..\Cps.Fct.Djb.TransferToolApi.Shared\Cps.Fct.Djb.TransferToolApi.Shared.csproj" />
+  </ItemGroup>
 </Project>
