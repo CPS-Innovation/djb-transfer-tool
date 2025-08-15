@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Cps.Fct.Hk.Common.Infrastructure" Version="1.0.0" />
+    <PackageReference Include="Cps.MasterDataService.Infrastructure.ApiClient" Version="1.1.113903" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Cps.Fct.Djb.TransferToolApi.Shared\Cps.Fct.Djb.TransferToolApi.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

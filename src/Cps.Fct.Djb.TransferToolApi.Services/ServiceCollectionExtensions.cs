@@ -7,6 +7,8 @@ namespace Cps.Fct.Djb.TransferToolApi.Services;
 using Cps.Fct.Hk.Common.DDEI.Provider;
 using Cps.Fct.Djb.TransferToolApi.Services.Contracts;
 using Microsoft.Extensions.DependencyInjection;
+using Cps.Fct.Djb.TransferToolApi.ApiClients.Factories.Interfaces;
+using Cps.Fct.Djb.TransferToolApi.ApiClients.Factories;
 
 /// <summary>
 /// Extension methods for <see cref="IServiceCollection"/>.

@@ -1,8 +1,8 @@
-// <copyright file="MdsCookie.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
+// <copyright file="MdsCookie.cs" company="TheCrownProsecutionService">
+// Copyright (c) The Crown Prosecution Service. All rights reserved.
 // </copyright>
 
-namespace Cps.Fct.Djb.TransferToolApi.Services.Dto;
+namespace Cps.Fct.Djb.TransferToolApi.Shared.Dtos.Mds;
 
 using System.Globalization;
 
