@@ -14,9 +14,6 @@ trigger:
 
 name: Release-$(Year:yy)-$(DayOfYear)-$(Rev:r)
 
-pool:
-  name: 'HSK PreProd Pool'
-
 parameters:
   - name: deployToDev
     displayName: Deploy to dev
@@ -24,18 +21,17 @@ parameters:
     type: boolean
 
 variables:
-  buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
-  solution: '**/src/Cps.Fct.Hk.DocGenService.sln'
-  project: '**/src/Cps.Fct.Hk.DocGenService/Cps.Fct.Hk.DocGenService.csproj'
+  solution: '**/Cps.Fct.Djb.TransferToolApi.sln'
+  project: '**/src/Cps.Fct.Djb.TransferToolApi/Cps.Fct.Djb.TransferToolApi.csproj'
   testProject: '**/test/**/*Tests.csproj'
-  integrationTestProject: '**/test/**/*Tests.csproj'
-  directory: .
-  appName: 'Cps.Fct.Hk.DocGen'
-  azureSubscription: 'df59c33f-333b-44ea-a41a-564890e7499c'
-  resourceName: 'fct-cps-hsk-docgen'
-  hskBuildAgentPool: 'HSK PreProd Pool'
-  hskBuildAgentPoolProduction: 'HSK Production Pool'
+####### Uncomment and complete when integration tests available #######
+  # integrationTestProject: ''
+  buildArtifact: 'transfer-tool-api'
+  appName: 'Cps.Fct.Djb.TransferToolApi'
+  resourceName: 'fa-djb-transfer-tool'
+  buildAgentPool: 'DJB PreProd Pool'
+  buildAgentPoolProduction: 'DJB Production Pool'
  
 stages:
 - stage: Build
@@ -69,13 +65,14 @@ stages:
         command: test
         projects: '$(testProject)'
         arguments: '--configuration debug'
-    
-    - task: DotNetCoreCLI@2
-      displayName: Run integration tests
-      inputs:
-        command: test
-        projects: '$(integrationTestProject)'
-        arguments: '--configuration debug'
+
+####### Uncomment when integration tests available #######
+    # - task: DotNetCoreCLI@2
+    #   displayName: Run integration tests
+    #   inputs:
+    #     command: test
+    #     projects: '$(integrationTestProject)'
+    #     arguments: '--configuration debug'
     
     - task: DotNetCoreCLI@2
       name: 'Publish'
@@ -92,104 +89,105 @@ stages:
       displayName: 'Publish build artifacts'
       inputs:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-        ArtifactName: 'docgen-service-api'
+        ArtifactName: '$(buildArtifact)'
         publishLocation: 'Container'
 
-- stage: DevDeploy
+- stage: Dev
   displayName: Deploy Dev
   dependsOn: Build
   condition: and(succeeded(), or(eq(${{ parameters.deployToDev }}, 'true'), eq(variables['Build.SourceBranch'], 'refs/heads/main')))
   jobs:
     - deployment: Deploy
       displayName: Deploy
-      environment: 'Reporting-service-dev'
+      environment: 'DJB-Dev'
       pool:
-        name: $(hskBuildAgentPool)
+        name: $(buildAgentPool)
       strategy:
         runOnce:
           deploy:
             steps:
             - task: AzureFunctionApp@1
               inputs:
-                azureSubscription: 'sc-hsk-preprod'
-                resourceGroupName: 'rg-hsk-uma-dev'
+                azureSubscription: 'sc-djb-preprod'
+                resourceGroupName: 'rg-djb-dev'
                 appType: 'functionAppLinux'
                 appName: '$(resourceName)-dev'
-                package: '$(Pipeline.Workspace)/docgen-service-api/Output/Cps.Fct.Hk.DocGenService'
+                package: '$(Pipeline.Workspace)/$(buildArtifact)/Output/$(appName)'
                 deploymentMethod: runFromPackage
-                ConfigurationSettings: '-ApplicationName "Cps.Fct.Hk.Ui.DocGenService" ' 
+                ConfigurationSettings: '-ApplicationName "$(appName)" ' 
                 appSettings:
-                      -Application__AppName "HK DocGen Service"
-                      -Application__AppVersion "1.0.0"
-                      -Environment "dev"
-                      -WEBSITE_ENABLE_SYNC_UPDATE_SITE "true"
-                      -WEBSITE_USE_PLACEHOLDER_DOTNETISOLATED "1"
-                      -WEBSITES_ENABLE_APP_SERVICE_STORAGE "true"
-                      -FUNCTIONS_EXTENSION_VERSION "4"
-                      -FUNCTIONS_WORKER_RUNTIME "dotnet-isolated"
-                    
-- stage: Staging
-  displayName: Deploy Staging
-  dependsOn: DevDeploy
-  condition: and(succeeded('DevDeploy'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
-  jobs:
-    - deployment: Deploy
-      environment: 'Reporting-service-staging'
-      displayName: Deploy
-      pool:
-        name: $(hskBuildAgentPool)
-      strategy:
-        runOnce:
-          deploy:
-            steps:
-            - task: AzureFunctionApp@1
-              inputs:
-                azureSubscription: 'HSK PreProd (via service principal)'
-                resourceGroupName: 'rg-hsk-uma-staging'
-                appType: 'functionAppLinux'
-                appName: '$(resourceName)-staging'
-                package: '$(Pipeline.Workspace)/docgen-service-api/Output/Cps.Fct.Hk.DocGenService'
-                deploymentMethod: runFromPackage
-                ConfigurationSettings: '-ApplicationName "Cps.Fct.Hk.Ui.DocGenService" ' 
-                appSettings:
-                      -Application__AppName "HK DocGen Service"
-                      -Application__AppVersion "1.0.0"
-                      -Environment "staging"
-                      -WEBSITE_ENABLE_SYNC_UPDATE_SITE "true"
-                      -WEBSITE_USE_PLACEHOLDER_DOTNETISOLATED "1"
-                      -WEBSITES_ENABLE_APP_SERVICE_STORAGE "true"
-                      -FUNCTIONS_EXTENSION_VERSION "4"
-                      -FUNCTIONS_WORKER_RUNTIME "dotnet-isolated"
+                  -Application__AppName "DJB Tranfer Tool API"
+                  -Application__AppVersion "1.0.0"
+                  -Environment "dev"
+                  -WEBSITE_ENABLE_SYNC_UPDATE_SITE "true"
+                  -WEBSITE_USE_PLACEHOLDER_DOTNETISOLATED "1"
+                  -WEBSITES_ENABLE_APP_SERVICE_STORAGE "true"
+                  -FUNCTIONS_EXTENSION_VERSION "4"
+                  -FUNCTIONS_WORKER_RUNTIME "dotnet-isolated"
 
-- stage: Production
-  displayName: Deploy Production
-  dependsOn: Staging
-  condition: and(succeeded('Staging'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
-  jobs:
-    - deployment: Deploy
-      environment: 'Reporting-service-production'
-      displayName: Deploy
-      pool:
-        name: $(hskBuildAgentPoolProduction)
-      strategy:
-        runOnce:
-          deploy:
-            steps:
-            - task: AzureFunctionApp@1
-              inputs:
-                azureSubscription: 'HSK Prod (via service principal)'
-                resourceGroupName: 'rg-hsk-uma-prod'
-                appType: 'functionAppLinux'
-                appName: '$(resourceName)-Production'
-                package: '$(Pipeline.Workspace)/docgen-service-api/Output/Cps.Fct.Hk.DocGenService'
-                deploymentMethod: runFromPackage
-                ConfigurationSettings: '-ApplicationName "Cps.Fct.Hk.Ui.DocGenService" ' 
-                appSettings:
-                      -Application__AppName "HK DocGen Service"
-                      -Application__AppVersion "1.0.0"
-                      -Environment "Production"
-                      -WEBSITE_ENABLE_SYNC_UPDATE_SITE "true"
-                      -WEBSITE_USE_PLACEHOLDER_DOTNETISOLATED "1"
-                      -WEBSITES_ENABLE_APP_SERVICE_STORAGE "true"
-                      -FUNCTIONS_EXTENSION_VERSION "4"
-                      -FUNCTIONS_WORKER_RUNTIME "dotnet-isolated"
+####### Uncomment when environments become available #######                    
+# - stage: Staging
+#   displayName: Deploy Staging
+#   dependsOn: Dev
+#   condition: and(succeeded('Dev'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+#   jobs:
+#     - deployment: Deploy
+#       environment: 'DJB-Staging'
+#       displayName: Deploy
+#       pool:
+#         name: $(buildAgentPool)
+#       strategy:
+#         runOnce:
+#           deploy:
+#             steps:
+#             - task: AzureFunctionApp@1
+#               inputs:
+#                 azureSubscription: 'DJB PreProd (via service principal)'
+#                 resourceGroupName: 'rg-djb-staging'
+#                 appType: 'functionAppLinux'
+#                 appName: '$(resourceName)-staging'
+#                 package: '$(Pipeline.Workspace)/$(buildArtifact)/Output/$(appName)'
+#                 deploymentMethod: runFromPackage
+#                 ConfigurationSettings: '-ApplicationName "$(appName)" ' 
+#                 appSettings:
+#                       -Application__AppName "DJB Tranfer Tool API"
+#                       -Application__AppVersion "1.0.0"
+#                       -Environment "staging"
+#                       -WEBSITE_ENABLE_SYNC_UPDATE_SITE "true"
+#                       -WEBSITE_USE_PLACEHOLDER_DOTNETISOLATED "1"
+#                       -WEBSITES_ENABLE_APP_SERVICE_STORAGE "true"
+#                       -FUNCTIONS_EXTENSION_VERSION "4"
+#                       -FUNCTIONS_WORKER_RUNTIME "dotnet-isolated"
+
+# - stage: Production
+#   displayName: Deploy Production
+#   dependsOn: Staging
+#   condition: and(succeeded('Staging'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+#   jobs:
+#     - deployment: Deploy
+#       environment: 'DJB-Prod'
+#       displayName: Deploy
+#       pool:
+#         name: $(buildAgentPoolProduction)
+#       strategy:
+#         runOnce:
+#           deploy:
+#             steps:
+#             - task: AzureFunctionApp@1
+#               inputs:
+#                 azureSubscription: 'DJB Prod (via service principal)'
+#                 resourceGroupName: 'rg-djb-prod'
+#                 appType: 'functionAppLinux'
+#                 appName: '$(resourceName)-prod'
+#                 package: '$(Pipeline.Workspace)/$(buildArtifact)/Output/$(appName)'
+#                 deploymentMethod: runFromPackage
+#                 ConfigurationSettings: '-ApplicationName "$(appName)" ' 
+#                 appSettings:
+#                       -Application__AppName "DJB Tranfer Tool API"
+#                       -Application__AppVersion "1.0.0"
+#                       -Environment "production"
+#                       -WEBSITE_ENABLE_SYNC_UPDATE_SITE "true"
+#                       -WEBSITE_USE_PLACEHOLDER_DOTNETISOLATED "1"
+#                       -WEBSITES_ENABLE_APP_SERVICE_STORAGE "true"
+#                       -FUNCTIONS_EXTENSION_VERSION "4"
+#                       -FUNCTIONS_WORKER_RUNTIME "dotnet-isolated"
