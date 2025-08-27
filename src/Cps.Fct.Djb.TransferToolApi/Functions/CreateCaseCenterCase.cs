@@ -11,6 +11,7 @@ using Cps.Fct.Djb.TransferTool.Shared.Constants;
 using Cps.Fct.Djb.TransferToolApi.Functions.Examples;
 using Cps.Fct.Djb.TransferToolApi.Models.Requests;
 using Cps.Fct.Djb.TransferToolApi.Models.Responses;
+using Cps.Fct.Djb.TransferToolApi.Services.Interfaces;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
@@ -23,9 +24,12 @@ using Microsoft.Extensions.Logging;
 /// Initializes a new instance of the <see cref="CreateCaseCenterCase"/> class.
 /// </remarks>
 /// <param name="logger">The logger instance used to log information and errors.</param>
-public class CreateCaseCenterCase(ILogger<CreateCaseCenterCase> logger)
+/// <param name="createCaseCenterCaseService">ICreateCaseCenterCaseService</param>
+public class CreateCaseCenterCase(ILogger<CreateCaseCenterCase> logger,
+    ICreateCaseCenterCaseService createCaseCenterCaseService)
 {
     private readonly ILogger<CreateCaseCenterCase> logger = logger;
+    private readonly ICreateCaseCenterCaseService createCaseCenterCaseService = createCaseCenterCaseService;
 
     /// <summary>
     /// Creates a case in Case Center.
@@ -52,6 +56,8 @@ public class CreateCaseCenterCase(ILogger<CreateCaseCenterCase> logger)
         {
             var stopwatch = Stopwatch.StartNew();
             this.logger.LogInformation($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(CreateCaseCenterCase)}.{nameof(this.CreateCase)}: Milestone - Function about to process a request.");
+
+            var response = await this.createCaseCenterCaseService.CreateCaseAsync().ConfigureAwait(false);
 
             var responseData = request.CreateResponse(HttpStatusCode.OK);
             return responseData;

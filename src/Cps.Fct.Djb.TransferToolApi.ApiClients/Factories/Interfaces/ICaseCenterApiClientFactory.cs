@@ -2,9 +2,9 @@
 // Copyright (c) The Crown Prosecution Service. All rights reserved.
 // </copyright>
 
-using Cps.Fct.Djb.TransferToolApi.ApiClients.Clients.Interfaces;
-
 namespace Cps.Fct.Djb.TransferToolApi.ApiClients.Factories.Interfaces;
+
+using Cps.Fct.Djb.TransferToolApi.ApiClients.Clients.Interfaces;
 
 /// <summary>
 /// Contract for ICaseCenterApiClientFactory.
