@@ -1,15 +1,15 @@
-// <copyright file="MdsApiClientFactory.cs" company="TheCrownProsecutionService">
+// <copyright file="CaseCenterApiClientFactory.cs" company="TheCrownProsecutionService">
 // Copyright (c) The Crown Prosecution Service. All rights reserved.
 // </copyright>
 
 namespace Cps.Fct.Djb.TransferToolApi.ApiClients.Factories;
 
+using System.Net.Http.Headers;
+using Cps.Fct.Djb.TransferToolApi.ApiClients.Clients;
 using Cps.Fct.Djb.TransferToolApi.ApiClients.Clients.Interfaces;
+using Cps.Fct.Djb.TransferToolApi.ApiClients.ConfigOptions;
 using Cps.Fct.Djb.TransferToolApi.ApiClients.Constants;
 using Cps.Fct.Djb.TransferToolApi.ApiClients.Factories.Interfaces;
-using Cps.Fct.Hk.Common.DDEI.Client.Configuration;
-using Cps.MasterDataService.Infrastructure.ApiClient;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -17,50 +17,68 @@ using Microsoft.Extensions.Options;
 public class CaseCenterApiClientFactory : ICaseCenterApiClientFactory
 {
     private readonly ILogger<CaseCenterApiClientFactory> logger;
+    private readonly ILoggerFactory loggerFactory;
     private readonly IHttpClientFactory httpClientFactory;
-    protected readonly ClientEndpointOptions clientOptions;
+    private readonly ClientEndpointOptions clientOptions;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CaseCenterApiClientFactory"/> class.
     /// </summary>
     /// <param name="logger">logger.</param>
+    /// <param name="loggerFactory">logger factory.</param>
     /// <param name="httpClientFactory">http client factory.</param>
-    /// <param name="clientOptions">client options.</param>
+    /// <param name="clientOptionsMonitor">client options.</param>
     public CaseCenterApiClientFactory(
         ILogger<CaseCenterApiClientFactory> logger,
+        ILoggerFactory loggerFactory,
         IHttpClientFactory httpClientFactory,
-        IOptionsMonitor<ClientEndpointOptions> clientOptions)
+        IOptionsMonitor<ClientEndpointOptions> clientOptionsMonitor)
     {
-        this.logger = logger;
-        this.httpClientFactory = httpClientFactory;
-        this.clientOptions = clientOptions.Get(CaseCenterConfigConstants.CaseCenterApiClientConfigurationName);
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
+        this.httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
+
+        this.clientOptions = clientOptionsMonitor.Get(CaseCenterConfigConstants.CaseCenterApiClientConfigurationName)
+            ?? throw new InvalidOperationException("Missing Case Center client options.");
     }
 
-    /// <inheritdoc />
-    public ICaseCenterApiClient Create(string cookieHeader)
+    /// <summary>
+    /// Creates a new instance of the <see cref="ICaseCenterApiClient"/> with the specified authentication token.
+    /// </summary>
+    /// <param name="authenticationToken">optional authentication token. Is needed for all other calls except authenticate on the CaseCenterApiClient.</param>
+    /// <returns>ICaseCenterApiClient.</returns>
+    public ICaseCenterApiClient Create(string? authenticationToken = "")
     {
-        if (string.IsNullOrWhiteSpace(cookieHeader))
+        if (this.clientOptions.BaseAddress is null || !this.clientOptions.BaseAddress.IsAbsoluteUri)
         {
-            throw new ArgumentNullException(nameof(cookieHeader), "Cookie header is required.");
+            throw new InvalidOperationException("Missing or invalid Case Center base address in configuration.");
         }
 
-        var functionKey = this.configuration.GetValue<string>("DDEIClient:FunctionKey");
-        if (string.IsNullOrWhiteSpace(functionKey))
+        if (this.clientOptions.Timeout <= TimeSpan.Zero)
         {
-            throw new InvalidOperationException("Missing MDS function key in configuration.");
+            throw new InvalidOperationException("Invalid HTTP client timeout in configuration.");
         }
 
-        var baseUrl = this.configuration.GetValue<string>("DDEIClient:BaseAddress");
-        if (string.IsNullOrWhiteSpace(baseUrl))
+        var httpClient = this.httpClientFactory.CreateClient(CaseCenterConfigConstants.CaseCenterApiClientConfigurationName);
+
+        httpClient.BaseAddress = this.clientOptions.BaseAddress;
+        httpClient.Timeout = this.clientOptions.Timeout;
+
+        httpClient.DefaultRequestHeaders.Remove("Bearer");
+        if (!string.IsNullOrWhiteSpace(authenticationToken))
         {
-            throw new InvalidOperationException("Missing MDS base url in configuration.");
+            httpClient.DefaultRequestHeaders.Add("Bearer", authenticationToken);
         }
 
-        var client = this.httpClientFactory.CreateClient("MdsClient");
+        var json = new MediaTypeWithQualityHeaderValue("application/json");
+        if (!httpClient.DefaultRequestHeaders.Accept.Contains(json))
+        {
+            httpClient.DefaultRequestHeaders.Accept.Add(json);
+        }
 
-        client.DefaultRequestHeaders.Add("x-functions-key", functionKey);
-        client.DefaultRequestHeaders.Add("Cms-Auth-Values", cookieHeader);
-
-        return new MdsApiClient(client) { BaseUrl = baseUrl };
+        return new CaseCenterApiClient(
+                        this.loggerFactory.CreateLogger<CaseCenterApiClient>(),
+                        httpClient,
+                        this.clientOptions);
     }
 }

@@ -4,7 +4,6 @@
 
 namespace Cps.Fct.Djb.TransferToolApi.ApiClients.Clients.Interfaces;
 
-using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.Case;
 using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.Common;
 
 /// <summary>
@@ -13,14 +12,8 @@ using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.Common;
 public interface ICaseCenterApiClient
 {
     /// <summary>
-    /// Creates a Case Center case based on the payload data.
-    /// Returns HttpReturnResultDto with a case center case id if successful.
-    ///   - id is non-null if success
-    ///   - id is null if failure (then statusCode is the server's code or 500 if exception)
+    /// Gets an authentication token from the Case Center API using the provided user credentials.
     /// </summary>
-    /// <param name="createCaseDto">The DTO containing the case payload data.</param>
-    /// <returns>
-    /// A HttpResponseMessage
-    /// </returns>
-    Task<HttpReturnResultDto<string>> CreateCaseAsync(CreateCaseDto createCaseDto);
+    /// <returns>A HttpReturnResultDto with the authentication token as a payload.</returns>
+    public Task<HttpReturnResultDto<string>> GetAuthTokenAsync();
 }

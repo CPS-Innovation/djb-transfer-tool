@@ -14,6 +14,8 @@ using Cps.Fct.Hk.Common.Infrastructure.HealthChecks;
 using Cps.Fct.Djb.TransferToolApi.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Cps.Fct.Djb.TransferToolApi.ApiClients.ConfigOptions;
+using Cps.Fct.Djb.TransferToolApi.ApiClients.Constants;
 
 /// <summary>
 /// Startup class configures services and the app's request pipeline.
@@ -31,8 +33,9 @@ public class Startup : CommonStartup
         services.AddSingleton(mapper);
 
         services.AddSingleton<IAuthorizationSettings, DisableAuthorizationSettings>();
+
         services
-            .AddDjbTransferToolApi();
+            .AddDjbTransferToolApi(configuration);
     }
 
     /// <inheritdoc/>

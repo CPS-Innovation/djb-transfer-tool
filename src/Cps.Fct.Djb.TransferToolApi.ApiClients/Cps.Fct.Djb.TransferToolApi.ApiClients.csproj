@@ -15,4 +15,8 @@
     <ProjectReference Include="..\Cps.Fct.Djb.TransferToolApi.Shared\Cps.Fct.Djb.TransferToolApi.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Dtos\" />
+  </ItemGroup>
+
 </Project>
