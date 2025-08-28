@@ -40,19 +40,16 @@ stages:
     pool:
       vmImage: ubuntu-latest
     steps:
-    - task: NuGetToolInstaller@1
-      name: 'NuGetToolInstaller'
-      displayName: 'NuGet tool installer'
-
+    # - task: NuGetToolInstaller@1
+    #   name: 'NuGetToolInstaller'
+    #   displayName: 'NuGet tool installer'    
+   
     - task: NuGetAuthenticate@1
-    
-    - task: NuGetCommand@2
-      name: 'NuGetRestore'
-      displayName: 'NuGet restore packages'
-      inputs:
-        command: 'restore'
-        restoreSolution: '$(solution)'
-        feedsToUse: 'select'
+      displayName: 'Authenticate with NuGet feeds'
+
+    - script: |
+        dotnet restore $(solution)
+      displayName: 'Restore NuGet packages using dotnet CLI'
 
     - task: DotNetCoreCLI@2
       displayName: Building solution
