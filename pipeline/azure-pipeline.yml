@@ -34,6 +34,11 @@ variables:
   buildAgentPoolProduction: 'DJB Production Pool'
  
 stages:
+- stage: Initialisation
+  displayName: Initialisation
+  jobs:
+    - template: ensure-mono.yaml@PipelineTemplates
+
 - stage: Build
   jobs:
   - job: Build
@@ -43,6 +48,8 @@ stages:
     - task: NuGetToolInstaller@1
       name: 'NuGetToolInstaller'
       displayName: 'NuGet tool installer'
+
+    - task: NuGetAuthenticate@1
     
     - task: NuGetCommand@2
       name: 'NuGetRestore'
