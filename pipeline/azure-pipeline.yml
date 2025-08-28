@@ -34,11 +34,6 @@ variables:
   buildAgentPoolProduction: 'DJB Production Pool'
  
 stages:
-- stage: Initialisation
-  displayName: Initialisation
-  jobs:
-    - template: ensure-mono.yaml@PipelineTemplates
-
 - stage: Build
   jobs:
   - job: Build
