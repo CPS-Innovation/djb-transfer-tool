@@ -1,5 +1,5 @@
-// <copyright file="InitResult.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
+// <copyright file="InitResult.cs" company="TheCrownProsecutionService">
+// Copyright (c) The Crown Prosecution Service. All rights reserved.
 // </copyright>
 
 namespace Cps.Fct.Djb.TransferToolApi.Services.Dto;

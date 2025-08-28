@@ -1,21 +1,17 @@
-// <copyright file="Startup.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
+// <copyright file="Startup.cs" company="TheCrownProsecutionService">
+// Copyright (c) The Crown Prosecution Service. All rights reserved.
 // </copyright>
 
 namespace Cps.Fct.Djb.TransferToolApi;
 
 using System.Diagnostics.CodeAnalysis;
-using AutoMapper;
+using Cps.Fct.Djb.TransferToolApi.Services;
 using Cps.Fct.Hk.Common.Contracts.Abstractions;
 using Cps.Fct.Hk.Common.Functions;
 using Cps.Fct.Hk.Common.Infrastructure.Abstractions.Implementations;
-using Cps.Fct.Hk.Common.Infrastructure.AutoMapper;
 using Cps.Fct.Hk.Common.Infrastructure.HealthChecks;
-using Cps.Fct.Djb.TransferToolApi.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Cps.Fct.Djb.TransferToolApi.ApiClients.ConfigOptions;
-using Cps.Fct.Djb.TransferToolApi.ApiClients.Constants;
 
 /// <summary>
 /// Startup class configures services and the app's request pipeline.

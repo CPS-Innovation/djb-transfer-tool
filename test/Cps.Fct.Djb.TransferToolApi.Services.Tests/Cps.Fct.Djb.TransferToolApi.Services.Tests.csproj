@@ -15,16 +15,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ServiceStack.Interfaces" Version="8.6.0" />  
-    <PackageReference Include="coverlet.collector" Version="6.0.4">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
+    <PackageReference Include="ServiceStack.Interfaces" Version="8.6.0" />
     <PackageReference Include="FluentAssertions" Version="7.0.0" />
-    <PackageReference Include="coverlet.collector" Version="6.0.4">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.3" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">

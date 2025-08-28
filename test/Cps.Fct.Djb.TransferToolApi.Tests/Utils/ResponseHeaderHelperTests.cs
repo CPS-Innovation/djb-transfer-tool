@@ -1,12 +1,12 @@
-// <copyright file="ResponseHeaderHelperTests.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
+// <copyright file="ResponseHeaderHelperTests.cs" company="TheCrownProsecutionService">
+// Copyright (c) The Crown Prosecution Service. All rights reserved.
 // </copyright>
 
 namespace Cps.Fct.Djb.TransferToolApi.Tests.Utils;
 
-using Xunit;
-using Microsoft.AspNetCore.Http;
 using Cps.Fct.Djb.TransferToolApi.Utils;
+using Microsoft.AspNetCore.Http;
+using Xunit;
 
 /// <summary>
 /// Unit tests for the <see cref="ResponseHeaderHelper"/> class.

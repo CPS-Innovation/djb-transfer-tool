@@ -270,7 +270,7 @@ public class CaseCenterApiClient : ICaseCenterApiClient
                                     DateTimeOffset dto => dto.ToUniversalTime().ToString("o"),
                                     DateTime dt => dt.ToUniversalTime().ToString("o"),
                                     bool b => b.ToString().ToLowerInvariant(),
-                                    _ => value.ToString(),
+                                    _ => value?.ToString() ?? string.Empty,
                                 };
 
                                 formData.Add(new StringContent(stringValue!), name);
