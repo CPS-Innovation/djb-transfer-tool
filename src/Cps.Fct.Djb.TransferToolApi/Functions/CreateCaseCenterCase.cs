@@ -7,6 +7,7 @@ namespace Cps.Fct.Djb.TransferToolApi.Functions;
 using System.Diagnostics;
 using System.Net;
 using Cps.Fct.Djb.TransferTool.FunctionApp.Functions.CaseCenter.Case.Examples;
+using Cps.Fct.Djb.TransferTool.Services.Services.Interfaces;
 using Cps.Fct.Djb.TransferTool.Shared.Constants;
 using Cps.Fct.Djb.TransferToolApi.Functions.Examples;
 using Cps.Fct.Djb.TransferToolApi.Models.Requests;
@@ -24,12 +25,15 @@ using Microsoft.Extensions.Logging;
 /// Initializes a new instance of the <see cref="CreateCaseCenterCase"/> class.
 /// </remarks>
 /// <param name="logger">The logger instance used to log information and errors.</param>
-/// <param name="createCaseCenterCaseService">ICreateCaseCenterCaseService</param>
+/// <param name="createCaseCenterCaseService">ICreateCaseCenterCaseService.</param>
+/// <param name="validationService">IValidationService.</param>
 public class CreateCaseCenterCase(ILogger<CreateCaseCenterCase> logger,
-    ICreateCaseCenterCaseService createCaseCenterCaseService)
+    ICreateCaseCenterCaseService createCaseCenterCaseService,
+    IValidationService validationService) : BaseHttpFunction
 {
     private readonly ILogger<CreateCaseCenterCase> logger = logger;
     private readonly ICreateCaseCenterCaseService createCaseCenterCaseService = createCaseCenterCaseService;
+    private readonly IValidationService validationService = validationService;
 
     /// <summary>
     /// Creates a case in Case Center.
@@ -57,9 +61,31 @@ public class CreateCaseCenterCase(ILogger<CreateCaseCenterCase> logger,
             var stopwatch = Stopwatch.StartNew();
             this.logger.LogInformation($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(CreateCaseCenterCase)}.{nameof(this.CreateCase)}: Milestone - Function about to process a request.");
 
-            var response = await this.createCaseCenterCaseService.CreateCaseAsync().ConfigureAwait(false);
+            var requestBodyPayload = await this.TryReadRequestBodyAsync<CreateCaseRequest>(request).ConfigureAwait(false);
+
+            if (requestBodyPayload == null)
+            {
+                var badRequest = request.CreateResponse(HttpStatusCode.BadRequest);
+                await badRequest.WriteStringAsync("Invalid or missing request body.").ConfigureAwait(false);
+                return badRequest;
+            }
+
+            var validateModelResult = await this.validationService.ValidateModelAsync(requestBodyPayload).ConfigureAwait(false);
+
+            if (!validateModelResult.IsSuccess)
+            {
+                return await this.BuildBadRequestResponseFromValidationAsync(request, validateModelResult.Data).ConfigureAwait(false);
+            }
+
+            var createCaseResult = await this.createCaseCenterCaseService.CreateCaseAsync(requestBodyPayload.CmsCaseId, requestBodyPayload.CmsUsername).ConfigureAwait(false);
+
+            if (!createCaseResult.IsSuccess)
+            {
+                return request.CreateResponse(createCaseResult.StatusCode);
+            }
 
             var responseData = request.CreateResponse(HttpStatusCode.OK);
+            await responseData.WriteAsJsonAsync(createCaseResult).ConfigureAwait(false);
             return responseData;
         }
         catch (Exception ex)

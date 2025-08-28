@@ -15,6 +15,8 @@ public interface ICreateCaseCenterCaseService
     /// <summary>
     /// Create a case in Case Center.
     /// </summary>
+    /// <param name="cmsCaseId">The cms unique case id.</param>
+    /// <param name="cmsUsername">The username of the person creating the case.</param>
     /// <returns>Returns the case center case idfor the created case.</returns>
-    public Task<HttpReturnResultDto<string>> CreateCaseAsync();
+    public Task<HttpReturnResultDto<string>> CreateCaseAsync(int cmsCaseId, string cmsUsername);
 }

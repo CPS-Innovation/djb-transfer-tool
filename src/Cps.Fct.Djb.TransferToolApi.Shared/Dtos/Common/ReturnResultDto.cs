@@ -1,4 +1,5 @@
 namespace Cps.Fct.Djb.TransferToolApi.Shared.Dtos.Common;
+
 public class ReturnResultDto<T>
 {
     /// <summary>

@@ -23,7 +23,7 @@ public class CreateCaseCenterCaseRequestExample
     {
         var exampleRequest = new CreateCaseRequest
         {
-            CmsUrn = "01AB1234567",
+            CmsCaseId = 123456,
         };
 
         this.Examples.Add(OpenApiExampleResolver.Resolve(

@@ -27,11 +27,6 @@ public class Startup : CommonStartup
     protected override void ConfigureServicesHook(
         IServiceCollection services, IConfiguration configuration)
     {
-        var mapperConfig = new MapperConfiguration(mc => mc.AddProfile(new AutoMapperProfile()));
-
-        var mapper = mapperConfig.CreateMapper();
-        services.AddSingleton(mapper);
-
         services.AddSingleton<IAuthorizationSettings, DisableAuthorizationSettings>();
 
         services
