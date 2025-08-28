@@ -13,36 +13,16 @@ using Newtonsoft.Json;
 public record CreateCaseRequest
 {
     /// <summary>
-    /// Gets CmsUrn.
+    /// Gets CmsCaseId.
     /// </summary>
     [Required]
-    [JsonProperty("cmsUrn")]
-    public string CmsUrn { get; init; } = string.Empty;
+    [JsonProperty("cmsCaseId")]
+    public int CmsCaseId { get; init; } = default!;
 
     /// <summary>
-    /// Gets CaseCreator.
+    /// Gets CmsUsername.
     /// </summary>
     [Required]
-    [JsonProperty("caseCreator")]
-    public string CaseCreator { get; init; } = string.Empty;
-
-    /// <summary>
-    /// Gets CaseTitle.
-    /// </summary>
-    [Required]
-    [JsonProperty("casetitle")]
-    public string CaseTitle { get; init; } = string.Empty;
-
-    /// <summary>
-    /// Gets CmsUniqueId.
-    /// </summary>
-    [Required]
-    [JsonProperty("cmsUniqueId")]
-    public string CmsUniqueId { get; init; } = string.Empty;
-
-    /// <summary>
-    /// Gets DepartmentId.
-    /// </summary>
-    [JsonProperty("departmentId")]
-    public string DepartmentId { get; init; } = string.Empty;
+    [JsonProperty("cmsUsername")]
+    public string CmsUsername { get; init; } = string.Empty;
 }

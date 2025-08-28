@@ -10,7 +10,7 @@ using Cps.Fct.Djb.TransferToolApi.Services.Dto;
 using Cps.Fct.Hk.Common.Contracts.Logging;
 using Cps.Fct.Hk.Common.DDEI.Client.Model;
 using Cps.Fct.Hk.Common.DDEI.Client.Model.Requests;
-using Cps.Fct.Hk.Common.DDEI.Provider;
+using Cps.Fct.Hk.Common.DDEI.Provider.Contracts;
 using Microsoft;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;

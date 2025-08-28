@@ -20,6 +20,7 @@ public class CaseCenterApiClientFactory : ICaseCenterApiClientFactory
     private readonly ILoggerFactory loggerFactory;
     private readonly IHttpClientFactory httpClientFactory;
     private readonly ClientEndpointOptions clientOptions;
+    private readonly CaseCenterOptions caseCenterOptions;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CaseCenterApiClientFactory"/> class.
@@ -28,11 +29,13 @@ public class CaseCenterApiClientFactory : ICaseCenterApiClientFactory
     /// <param name="loggerFactory">logger factory.</param>
     /// <param name="httpClientFactory">http client factory.</param>
     /// <param name="clientOptionsMonitor">client options.</param>
+    /// <param name="caseCenterOptionsMonitor">case center options.</param>
     public CaseCenterApiClientFactory(
         ILogger<CaseCenterApiClientFactory> logger,
         ILoggerFactory loggerFactory,
         IHttpClientFactory httpClientFactory,
-        IOptionsMonitor<ClientEndpointOptions> clientOptionsMonitor)
+        IOptionsMonitor<ClientEndpointOptions> clientOptionsMonitor,
+        IOptionsMonitor<CaseCenterOptions> caseCenterOptionsMonitor)
     {
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
@@ -40,6 +43,9 @@ public class CaseCenterApiClientFactory : ICaseCenterApiClientFactory
 
         this.clientOptions = clientOptionsMonitor.Get(CaseCenterConfigConstants.CaseCenterApiClientConfigurationName)
             ?? throw new InvalidOperationException("Missing Case Center client options.");
+
+        this.caseCenterOptions = caseCenterOptionsMonitor.CurrentValue
+            ?? throw new InvalidOperationException("Missing Case Center options.");
     }
 
     /// <summary>
@@ -79,6 +85,7 @@ public class CaseCenterApiClientFactory : ICaseCenterApiClientFactory
         return new CaseCenterApiClient(
                         this.loggerFactory.CreateLogger<CaseCenterApiClient>(),
                         httpClient,
-                        this.clientOptions);
+                        this.clientOptions,
+                        this.caseCenterOptions);
     }
 }

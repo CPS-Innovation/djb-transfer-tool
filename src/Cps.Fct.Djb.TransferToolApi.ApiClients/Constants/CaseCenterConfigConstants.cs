@@ -10,6 +10,11 @@ namespace Cps.Fct.Djb.TransferToolApi.ApiClients.Constants;
 public static class CaseCenterConfigConstants
 {
     /// <summary>
+    /// Name of the configuration section for the Case Center.
+    /// </summary>
+    public const string CaseCenterConfigurationName = "CaseCenter";
+
+    /// <summary>
     /// Name of the configuration section for the Case Center API client settings.
     /// </summary>
     public const string CaseCenterApiClientConfigurationName = "CaseCenterApiClient";

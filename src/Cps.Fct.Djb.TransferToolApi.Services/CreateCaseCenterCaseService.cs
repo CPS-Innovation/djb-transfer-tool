@@ -5,15 +5,16 @@
 namespace Cps.Fct.Djb.TransferToolApi.Services;
 
 using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
+using Cps.Fct.Djb.TransferTool.Shared.Constants;
 using Cps.Fct.Djb.TransferToolApi.ApiClients.Factories.Interfaces;
 using Cps.Fct.Djb.TransferToolApi.Services.Interfaces;
-using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.Auth;
+using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.Case;
 using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.Common;
-using Microsoft.Extensions.Logging;
+using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.Mds;
 using Microsoft;
-using Azure.Core;
-using Cps.Fct.Djb.TransferTool.Shared.Constants;
+using Microsoft.Extensions.Logging;
 
 /// <summary>
 /// Create case center case service.
@@ -22,28 +23,62 @@ public class CreateCaseCenterCaseService : ICreateCaseCenterCaseService
 {
     private readonly ILogger<CreateCaseCenterCaseService> logger;
     private readonly ICaseCenterApiClientFactory caseCenterApiClientFactory;
+    private readonly IMdsApiClientFactory mdsApiClientFactory;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CreateCaseCenterCaseService"/> class.
     /// </summary>
-    /// <param name="logger">ILogger CreateCaseCenterCaseService</param>
+    /// <param name="logger">ILogger CreateCaseCenterCaseService.</param>
     /// <param name="caseCenterApiClientFactory">ICaseCenterApiClientFactory.</param>
+    /// <param name="mdsApiClientFactory">IMdsApiClientFactory.</param>
     public CreateCaseCenterCaseService(
         ILogger<CreateCaseCenterCaseService> logger,
-        ICaseCenterApiClientFactory caseCenterApiClientFactory)
+        ICaseCenterApiClientFactory caseCenterApiClientFactory,
+        IMdsApiClientFactory mdsApiClientFactory)
     {
         this.logger = logger;
         this.caseCenterApiClientFactory = caseCenterApiClientFactory ?? throw new ArgumentNullException(nameof(caseCenterApiClientFactory));
+        this.mdsApiClientFactory = mdsApiClientFactory;
     }
 
     /// <summary>
     /// Create a case in Case Center.
     /// </summary>
+    /// <param name="cmsCaseId">The cms unique case id.</param>
+    /// <param name="cmsUsername">The username of the person creating the case.</param>
     /// <returns>Returns the case center case idfor the created case.</returns>
-    public async Task<HttpReturnResultDto<string>> CreateCaseAsync()
+    public async Task<HttpReturnResultDto<string>> CreateCaseAsync(int cmsCaseId, string cmsUsername)
     {
         try
         {
+            Requires.NotNull(cmsCaseId);
+            Requires.NotNull(cmsUsername);
+
+            // FXS: Populate these for development/debugging only - in production these will come from the user's session
+            var cmsCookies = string.Empty;
+            var cmsModernToken = string.Empty;
+
+            // get the case from MDS
+            var cookie = new MdsCookie(cmsCookies, cmsModernToken);
+            var client = this.mdsApiClientFactory.Create(JsonSerializer.Serialize(cookie));
+            var caseSummary = await client.GetCaseSummaryAsync(cmsCaseId).ConfigureAwait(false);
+
+            if (caseSummary is null)
+            {
+                var message = $"No case found in MDS for CMS Case ID {cmsCaseId}";
+                this.logger.LogError($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(CreateCaseCenterCaseService)}.{nameof(this.CreateCaseAsync)}: Milestone - {message}");
+                return HttpReturnResultDto<string>.Fail(HttpStatusCode.NotFound, message);
+            }
+
+            var caseToCreate = new CreateCaseDto()
+            {
+                CmsCaseId = cmsCaseId,
+                CaseCreator = cmsUsername,
+                AreaCrownCourtCode = caseSummary?.NextHearingVenueCode ?? string.Empty,
+                CaseUrn = caseSummary?.Urn ?? string.Empty,
+                CaseTitle = caseSummary?.LeadDefendantFirstNames + " " + caseSummary?.LeadDefendantSurname?.ToUpper(),
+            };
+
             // get the admin auth token from case center
             var caseCenterApiClient = this.caseCenterApiClientFactory.Create(string.Empty);
 
@@ -56,65 +91,17 @@ public class CreateCaseCenterCaseService : ICreateCaseCenterCaseService
 
             var caseCenterAuthToken = getAdminAuthTokenResponse.Data;
 
+            // now create the case
+            var createCaseCenterCaseResponse = await caseCenterApiClient.CreateCaseAsync(caseCenterAuthToken, caseToCreate).ConfigureAwait(false);
 
+            if (!createCaseCenterCaseResponse.IsSuccess)
+            {
+                return createCaseCenterCaseResponse;
+            }
 
+            var caseCenterCaseId = createCaseCenterCaseResponse.Data;
 
-            return HttpReturnResultDto<string>.Success(HttpStatusCode.Created, caseCenterAuthToken);
-
-            //// first get the template
-            //var getTemplateResponse = await this.caseCenterApiClient.GetTemplateCaseAsync(new AuthenticatedUserDto() { CaseCenterAuthToken = caseCenterAuthToken });
-
-            //if (!getTemplateResponse.IsSuccess)
-            //{
-            //    return getTemplateResponse;
-            //}
-
-            //var templateId = getTemplateResponse.Data;
-
-            //// now create the case
-            //createCaseDto.CaseCenterAuthToken = caseCenterAuthToken;
-            //createCaseDto.TemplateId = templateId;
-            //createCaseDto.OrganisationId = caseCenterOptions.OrganisationId;
-            //createCaseDto.Type = caseCenterOptions.OrganisationType;
-
-            //var createCaseResponse = await this.caseCenterApiClient.CreateCaseAsync(createCaseDto);
-
-            //if (!createCaseResponse.IsSuccess)
-            //{
-            //    return createCaseResponse;
-            //}
-
-            //var caseCenterCaseId = createCaseResponse.Data;
-
-            //// now get all the bundles for the case
-            //var getBundlesForCaseResponse = await this.caseCenterApiClient.GetCaseBundlesAsync(new GetCaseBundleDto()
-            //{
-            //    CaseCenterAuthToken = caseCenterAuthToken,
-            //    CaseCenterCaseId = caseCenterCaseId
-            //});
-
-            //if (!getBundlesForCaseResponse.IsSuccess)
-            //{
-            //    return HttpReturnResultDto<string>.Fail(HttpStatusCode.InternalServerError, getBundlesForCaseResponse.Message);
-            //}
-
-            //var bundleIds = getBundlesForCaseResponse.Data;
-
-            //// now add the user to the case
-            //var addUserToCaseResponse = await this.caseCenterApiClient.AddUserToCaseAsync(new AddUserToCaseDto()
-            //{
-            //    BundleIds = bundleIds,
-            //    CaseCenterAuthToken = caseCenterAuthToken,
-            //    CaseCenterCaseId = caseCenterCaseId,
-            //    Username = createCaseDto.CaseCreator
-            //});
-
-            //if (!addUserToCaseResponse.IsSuccess)
-            //{
-            //    return HttpReturnResultDto<string>.Fail(HttpStatusCode.InternalServerError, addUserToCaseResponse.Message);
-            //}
-
-            // return HttpReturnResultDto<string>.Success(HttpStatusCode.Created, caseCenterCaseId);
+            return HttpReturnResultDto<string>.Success(HttpStatusCode.Created, caseCenterCaseId);
         }
         catch (Exception ex)
         {
