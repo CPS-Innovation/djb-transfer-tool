@@ -29,7 +29,8 @@ using Microsoft.Extensions.Logging;
 /// <param name="validationService">IValidationService.</param>
 public class CreateCaseCenterCase(ILogger<CreateCaseCenterCase> logger,
     ICreateCaseCenterCaseService createCaseCenterCaseService,
-    IValidationService validationService) : BaseHttpFunction
+    IValidationService validationService)
+    : BaseHttpFunction
 {
     private readonly ILogger<CreateCaseCenterCase> logger = logger;
     private readonly ICreateCaseCenterCaseService createCaseCenterCaseService = createCaseCenterCaseService;

@@ -1,4 +1,4 @@
-﻿// <copyright file="ValidationService.cs" company="TheCrownProsecutionService">
+// <copyright file="ValidationService.cs" company="TheCrownProsecutionService">
 // Copyright (c) The Crown Prosecution Service. All rights reserved.
 // </copyright>
 
@@ -40,8 +40,7 @@ public class ValidationService : IValidationService
         {
             return ReturnResultDto<ValidationResult?>.Success(
                 data: null,
-                message: $"No validator registered for '{typeof(T).Name}'. Skipping validation."
-            );
+                message: $"No validator registered for '{typeof(T).Name}'. Skipping validation.");
         }
 
         ValidationResult validationResult = await validator.ValidateAsync(model).ConfigureAwait(false);
@@ -62,7 +61,7 @@ public class ValidationService : IValidationService
     }
 
     /// <summary>
-    /// Converts a FluentValidation <see cref="ValidationResult"/> into a 
+    /// Converts a FluentValidation <see cref="ValidationResult"/> into a
     /// <see cref="ValidationErrorResponseDto"/> with top-level message and property-level errors.
     /// </summary>
     /// <param name="validationResult">The FluentValidation result to convert.</param>
