@@ -40,9 +40,6 @@ stages:
     pool:
       vmImage: ubuntu-latest
     steps:
-    - task: Bash@3
-      inputs:
-        filePath: '$(System.DefaultWorkingDirectory)/pipeline/scripts/ensure-mono.sh'
 
     - task: NuGetToolInstaller@1
       name: 'NuGetToolInstaller'
@@ -50,15 +47,10 @@ stages:
 
     - task: NuGetAuthenticate@1
       displayName: 'NuGet Authenticate'
-
-    - task: NuGetCommand@2
-      name: 'NuGetRestore'
-      displayName: 'NuGet restore packages'
-      inputs:
-        command: 'restore'
-        restoreSolution: '$(solution)'
-        feedsToUse: 'config'
-        nugetConfigPath: 'nuget.config'
+    
+    - script: |
+        dotnet restore $(solution) --configfile nuget.config
+      displayName: 'DotNet restore packages'
 
     - task: DotNetCoreCLI@2
       displayName: Building solution
