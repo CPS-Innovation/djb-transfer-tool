@@ -38,8 +38,12 @@ stages:
   jobs:
   - job: Build
     pool:
-      vmImage: ubuntu-22.04
+      vmImage: ubuntu-latest
     steps:
+    - task: Bash@3
+      inputs:
+        filePath: '$(System.DefaultWorkingDirectory)/pipeline/scripts/ensure-mono.sh'
+
     - task: NuGetToolInstaller@1
       name: 'NuGetToolInstaller'
       displayName: 'NuGet tool installer'
