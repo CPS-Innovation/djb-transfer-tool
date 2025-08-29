@@ -99,7 +99,7 @@ stages:
   jobs:
     - deployment: Deploy
       displayName: Deploy
-      environment: 'DJB-Dev'
+      environment: 'DJB-transfer-tool-dev'
       pool:
         name: $(buildAgentPool)
       strategy:
@@ -132,7 +132,7 @@ stages:
 #   condition: and(succeeded('Dev'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
 #   jobs:
 #     - deployment: Deploy
-#       environment: 'DJB-Staging'
+#       environment: 'DJB-transfer-tool-staging'
 #       displayName: Deploy
 #       pool:
 #         name: $(buildAgentPool)
@@ -165,7 +165,7 @@ stages:
 #   condition: and(succeeded('Staging'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
 #   jobs:
 #     - deployment: Deploy
-#       environment: 'DJB-Prod'
+#       environment: 'DJB-transfer-tool-prod'
 #       displayName: Deploy
 #       pool:
 #         name: $(buildAgentPoolProduction)
