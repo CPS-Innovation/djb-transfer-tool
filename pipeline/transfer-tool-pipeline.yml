@@ -22,7 +22,7 @@ parameters:
 
 variables:
   buildConfiguration: 'Release'
-  solution: '**/src/Cps.Fct.Djb.TransferToolApi.sln'
+  solution: 'Cps.Fct.Djb.TransferToolApi.sln'
   project: '**/src/Cps.Fct.Djb.TransferToolApi/Cps.Fct.Djb.TransferToolApi.csproj'
   testProject: '**/test/**/*Tests.csproj'
 ####### Uncomment and complete when integration tests available #######
@@ -53,7 +53,8 @@ stages:
       inputs:
         command: 'restore'
         restoreSolution: '$(solution)'
-        feedsToUse: 'select'
+        feedsToUse: 'config'
+        nugetConfigPath: 'nuget.config'
 
     - task: DotNetCoreCLI@2
       displayName: Building solution
