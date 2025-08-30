@@ -35,4 +35,8 @@
     <ProjectReference Include="..\Cps.Fct.Djb.TransferToolApi.ApiClients\Cps.Fct.Djb.TransferToolApi.ApiClients.csproj" />
     <ProjectReference Include="..\Cps.Fct.Djb.TransferToolApi.Shared\Cps.Fct.Djb.TransferToolApi.Shared.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Providers\" />
+  </ItemGroup>
 </Project>

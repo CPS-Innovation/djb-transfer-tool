@@ -2,15 +2,15 @@
 // Copyright (c) The Crown Prosecution Service. All rights reserved.
 // </copyright>
 
-namespace Cps.Fct.Djb.TransferToolApi.Services;
+namespace Cps.Fct.Djb.TransferToolApi.Services.Implementation;
 
 using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Cps.Fct.Djb.TransferTool.Shared.Constants;
 using Cps.Fct.Djb.TransferToolApi.ApiClients.Factories.Interfaces;
-using Cps.Fct.Djb.TransferToolApi.Services.Interfaces;
-using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.Case;
+using Cps.Fct.Djb.TransferToolApi.Services.Implementation.Interfaces;
+using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.CaseCenter;
 using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.Common;
 using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.Mds;
 using Microsoft;
@@ -44,40 +44,38 @@ public class CreateCaseCenterCaseService : ICreateCaseCenterCaseService
     /// <summary>
     /// Create a case in Case Center.
     /// </summary>
-    /// <param name="cmsCaseId">The cms unique case id.</param>
-    /// <param name="cmsUsername">The username of the person creating the case.</param>
+    /// <param name="inputCreateCaseDto">The payload for the case to be created.</param>
     /// <returns>Returns the case center case idfor the created case.</returns>
-    public async Task<HttpReturnResultDto<string>> CreateCaseAsync(int cmsCaseId, string cmsUsername)
+    public async Task<HttpReturnResultDto<string>> CreateCaseAsync(CreateCaseDto inputCreateCaseDto)
     {
         try
         {
-            Requires.NotNull(cmsCaseId);
-            Requires.NotNull(cmsUsername);
-
-            // FXS: Populate these for development/debugging only - in production these will come from the user's session
-            var cmsCookies = string.Empty;
-            var cmsModernToken = string.Empty;
+            Requires.NotNull(inputCreateCaseDto);
+            Requires.NotNull(inputCreateCaseDto.CmsCaseId);
+            Requires.NotNull(inputCreateCaseDto.CaseCreator);
+            Requires.NotNull(inputCreateCaseDto.CmsModernAuthToken);
+            Requires.NotNull(inputCreateCaseDto.CmsClassicAuthCookies);
 
             // get the case from MDS
-            var cookie = new MdsCookie(cmsCookies, cmsModernToken);
+            var cookie = new MdsCookie(inputCreateCaseDto.CmsClassicAuthCookies, inputCreateCaseDto.CmsModernAuthToken);
             var client = this.mdsApiClientFactory.Create(JsonSerializer.Serialize(cookie));
-            var caseSummary = await client.GetCaseSummaryAsync(cmsCaseId).ConfigureAwait(false);
+            var caseSummary = await client.GetCaseSummaryAsync(inputCreateCaseDto.CmsCaseId).ConfigureAwait(false);
 
             if (caseSummary is null)
             {
-                var message = $"No case found in MDS for CMS Case ID {cmsCaseId}";
+                var message = $"No case found in MDS for CMS Case ID {inputCreateCaseDto.CmsCaseId}";
                 this.logger.LogError($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(CreateCaseCenterCaseService)}.{nameof(this.CreateCaseAsync)}: Milestone - {message}");
                 return HttpReturnResultDto<string>.Fail(HttpStatusCode.NotFound, message);
             }
 
-            var caseToCreate = new CreateCaseDto()
+            #pragma warning disable SA1101 // Prefix local calls with this
+            var caseToCreateDto = inputCreateCaseDto with
             {
-                CmsCaseId = cmsCaseId,
-                CaseCreator = cmsUsername,
-                AreaCrownCourtCode = caseSummary?.NextHearingVenueCode ?? string.Empty,
-                CaseUrn = caseSummary?.Urn ?? string.Empty,
-                CaseTitle = caseSummary?.LeadDefendantFirstNames + " " + caseSummary?.LeadDefendantSurname?.ToUpper(),
+                AreaCrownCourtCode = caseSummary.NextHearingVenueCode ?? string.Empty,
+                CaseUrn = caseSummary.Urn ?? string.Empty,
+                CaseTitle = caseSummary.LeadDefendantFirstNames + " " + caseSummary.LeadDefendantSurname?.ToUpper(),
             };
+            #pragma warning restore SA1101
 
             // get the admin auth token from case center
             var caseCenterApiClient = this.caseCenterApiClientFactory.Create(string.Empty);
@@ -92,7 +90,7 @@ public class CreateCaseCenterCaseService : ICreateCaseCenterCaseService
             var caseCenterAuthToken = getAdminAuthTokenResponse.Data;
 
             // now create the case
-            var createCaseCenterCaseResponse = await caseCenterApiClient.CreateCaseAsync(caseCenterAuthToken, caseToCreate).ConfigureAwait(false);
+            var createCaseCenterCaseResponse = await caseCenterApiClient.CreateCaseAsync(caseCenterAuthToken, caseToCreateDto).ConfigureAwait(false);
 
             if (!createCaseCenterCaseResponse.IsSuccess)
             {

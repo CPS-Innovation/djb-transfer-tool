@@ -1,8 +1,8 @@
-﻿// <copyright file="IValidationService.cs" company="TheCrownProsecutionService">
+// <copyright file="IValidationService.cs" company="TheCrownProsecutionService">
 // Copyright (c) The Crown Prosecution Service. All rights reserved.
 // </copyright>
 
-namespace Cps.Fct.Djb.TransferTool.Services.Services.Interfaces;
+namespace Cps.Fct.Djb.TransferToolApi.Services.Implementation.Interfaces;
 
 using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.Common;
 using FluentValidation.Results;

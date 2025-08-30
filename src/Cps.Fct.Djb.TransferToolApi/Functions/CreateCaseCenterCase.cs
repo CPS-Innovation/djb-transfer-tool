@@ -6,17 +6,20 @@ namespace Cps.Fct.Djb.TransferToolApi.Functions;
 
 using System.Diagnostics;
 using System.Net;
+using AutoMapper;
 using Cps.Fct.Djb.TransferTool.FunctionApp.Functions.CaseCenter.Case.Examples;
-using Cps.Fct.Djb.TransferTool.Services.Services.Interfaces;
 using Cps.Fct.Djb.TransferTool.Shared.Constants;
 using Cps.Fct.Djb.TransferToolApi.Functions.Examples;
 using Cps.Fct.Djb.TransferToolApi.Models.Requests;
 using Cps.Fct.Djb.TransferToolApi.Models.Responses;
-using Cps.Fct.Djb.TransferToolApi.Services.Interfaces;
+using Cps.Fct.Djb.TransferToolApi.Services.Implementation.Interfaces;
+using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.CaseCenter;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi.Models;
 
 /// <summary>
 /// Represents a function that creates a case in Case Center.
@@ -25,16 +28,19 @@ using Microsoft.Extensions.Logging;
 /// Initializes a new instance of the <see cref="CreateCaseCenterCase"/> class.
 /// </remarks>
 /// <param name="logger">The logger instance used to log information and errors.</param>
+/// <param name="autoMapper">IValidationService.</param>
+/// <param name="validationService">IMapper.</param>
 /// <param name="createCaseCenterCaseService">ICreateCaseCenterCaseService.</param>
-/// <param name="validationService">IValidationService.</param>
 public class CreateCaseCenterCase(ILogger<CreateCaseCenterCase> logger,
-    ICreateCaseCenterCaseService createCaseCenterCaseService,
-    IValidationService validationService)
-    : BaseHttpFunction
+    IValidationService validationService,
+    IMapper autoMapper,
+    ICreateCaseCenterCaseService createCaseCenterCaseService)
+    : BaseHttpFunction()
 {
     private readonly ILogger<CreateCaseCenterCase> logger = logger;
-    private readonly ICreateCaseCenterCaseService createCaseCenterCaseService = createCaseCenterCaseService;
+    private readonly IMapper autoMapper = autoMapper;
     private readonly IValidationService validationService = validationService;
+    private readonly ICreateCaseCenterCaseService createCaseCenterCaseService = createCaseCenterCaseService;
 
     /// <summary>
     /// Creates a case in Case Center.
@@ -49,6 +55,8 @@ public class CreateCaseCenterCase(ILogger<CreateCaseCenterCase> logger,
     /// </returns>
     [Function(nameof(CreateCaseCenterCase))]
     [OpenApiOperation(operationId: "CreateCaseCenterCase", tags: ["Case"], Description = "Creates a case in Case Center using the Case Center API.")]
+    [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, Name = "x-functions-key", In = OpenApiSecurityLocationType.Header, Description = "The Azure Function API Key.")]
+    [OpenApiSecurity("cms_auth_values", SecuritySchemeType.ApiKey, Name = "Cms-Auth-Values", In = OpenApiSecurityLocationType.Header, Description = "The CMS Auth Values. This can be retrieved via the Authenticate API Endpoint.")]
     [OpenApiRequestBody("application/json", typeof(CreateCaseRequest), Required = true, Description = "Payload for creating the case.", Example = typeof(CreateCaseCenterCaseRequestExample))]
     [OpenApiResponseWithBody(HttpStatusCode.OK, "application/json", typeof(CaseCreatedResponse), Description = "Successfully created a case.", Example = typeof(CreateCaseCenterCaseResponseExample))]
     [OpenApiResponseWithoutBody(HttpStatusCode.BadRequest, Description = "Missing or invalid request data.")]
@@ -62,13 +70,22 @@ public class CreateCaseCenterCase(ILogger<CreateCaseCenterCase> logger,
             var stopwatch = Stopwatch.StartNew();
             this.logger.LogInformation($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(CreateCaseCenterCase)}.{nameof(this.CreateCase)}: Milestone - Function about to process a request.");
 
+            if (!this.HasCmsAuthValuesHeader(request))
+            {
+                var unauthorizedResponse = request.CreateResponse(HttpStatusCode.Unauthorized);
+                await unauthorizedResponse.WriteStringAsync("Invalid or missing auth headers.").ConfigureAwait(false);
+                return unauthorizedResponse;
+            }
+
+            var cmsAuthValues = this.GetCmsAuthValues(request);
+
             var requestBodyPayload = await this.TryReadRequestBodyAsync<CreateCaseRequest>(request).ConfigureAwait(false);
 
             if (requestBodyPayload == null)
             {
-                var badRequest = request.CreateResponse(HttpStatusCode.BadRequest);
-                await badRequest.WriteStringAsync("Invalid or missing request body.").ConfigureAwait(false);
-                return badRequest;
+                var badRequestResponse = request.CreateResponse(HttpStatusCode.BadRequest);
+                await badRequestResponse.WriteStringAsync("Invalid or missing request body.").ConfigureAwait(false);
+                return badRequestResponse;
             }
 
             var validateModelResult = await this.validationService.ValidateModelAsync(requestBodyPayload).ConfigureAwait(false);
@@ -78,7 +95,8 @@ public class CreateCaseCenterCase(ILogger<CreateCaseCenterCase> logger,
                 return await this.BuildBadRequestResponseFromValidationAsync(request, validateModelResult.Data).ConfigureAwait(false);
             }
 
-            var createCaseResult = await this.createCaseCenterCaseService.CreateCaseAsync(requestBodyPayload.CmsCaseId, requestBodyPayload.CmsUsername).ConfigureAwait(false);
+            var createCaseDto = this.autoMapper.Map<CreateCaseDto>((requestBodyPayload, cmsAuthValues));
+            var createCaseResult = await this.createCaseCenterCaseService.CreateCaseAsync(createCaseDto).ConfigureAwait(false);
 
             if (!createCaseResult.IsSuccess)
             {
@@ -86,7 +104,7 @@ public class CreateCaseCenterCase(ILogger<CreateCaseCenterCase> logger,
             }
 
             var responseData = request.CreateResponse(HttpStatusCode.OK);
-            await responseData.WriteAsJsonAsync(createCaseResult).ConfigureAwait(false);
+            await responseData.WriteAsJsonAsync(createCaseResult.Data).ConfigureAwait(false);
             return responseData;
         }
         catch (Exception ex)

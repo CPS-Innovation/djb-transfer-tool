@@ -5,7 +5,10 @@
 namespace Cps.Fct.Djb.TransferToolApi;
 
 using AutoMapper;
+using Cps.Fct.Djb.TransferToolApi.Models.Requests;
+using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.CaseCenter;
 using Cps.Fct.Djb.TransferToolApi.Shared.Interfaces;
+using Cps.Fct.Hk.Common.DDEI.Client.Model;
 
 /// <summary>
 /// AutoMapper profile for API layer mappings.
@@ -17,5 +20,13 @@ public class ApiAutoMapperProfile : Profile, IAutoMapperDependencyScanner
     /// </summary>
     public ApiAutoMapperProfile()
     {
+        this.CreateMap<(CreateCaseRequest createCaseRequest, CmsAuthValues cmsAuthValues), CreateCaseDto>()
+            .ConstructUsing(src => new CreateCaseDto
+            {
+                CmsCaseId = src.createCaseRequest.CmsCaseId,
+                CaseCreator = src.createCaseRequest.CmsUsername,
+                CmsClassicAuthCookies = src.cmsAuthValues.CmsCookies,
+                CmsModernAuthToken = src.cmsAuthValues.CmsModernToken,
+            });
     }
 }

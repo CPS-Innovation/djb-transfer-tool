@@ -4,13 +4,12 @@
 
 namespace Cps.Fct.Djb.TransferToolApi.Services;
 
-using Cps.Fct.Djb.TransferTool.Services.Services.Interfaces;
 using Cps.Fct.Djb.TransferToolApi.ApiClients.ConfigOptions;
 using Cps.Fct.Djb.TransferToolApi.ApiClients.Constants;
 using Cps.Fct.Djb.TransferToolApi.ApiClients.Factories;
 using Cps.Fct.Djb.TransferToolApi.ApiClients.Factories.Interfaces;
-using Cps.Fct.Djb.TransferToolApi.Services.Contracts;
-using Cps.Fct.Djb.TransferToolApi.Services.Interfaces;
+using Cps.Fct.Djb.TransferToolApi.Services.Implementation;
+using Cps.Fct.Djb.TransferToolApi.Services.Implementation.Interfaces;
 using Cps.Fct.Djb.TransferToolApi.Shared.Interfaces;
 using Cps.Fct.Hk.Common.DDEI.Provider;
 using FluentValidation;
@@ -32,8 +31,6 @@ public static class ServiceCollectionExtensions
     {
         services.AddDDEIProvider();
 
-        services.AddScoped<ICookieService, CookieService>();
-        services.AddScoped<IInitService, InitService>();
         services.AddHttpClient(); // Required for factory
         services.AddSingleton<IMdsApiClientFactory, MdsApiClientFactory>();
 

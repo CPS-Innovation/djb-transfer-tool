@@ -5,7 +5,9 @@
 namespace Cps.Fct.Djb.TransferToolApi.Functions;
 
 using System.Net;
+using System.Text.Json;
 using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.Common;
+using Cps.Fct.Hk.Common.DDEI.Client.Model;
 using FluentValidation.Results;
 using Microsoft.Azure.Functions.Worker.Http;
 
@@ -16,6 +18,83 @@ using Microsoft.Azure.Functions.Worker.Http;
 /// </summary>
 public abstract class BaseHttpFunction
 {
+    /// <summary>
+    /// Checks if the incoming HTTP request contains a valid "Cms-Auth-Values" header.
+    /// </summary>
+    /// <param name="request">HttpRequestData.</param>
+    /// <returns>True if valid otherwise false.</returns>
+    protected bool HasCmsAuthValuesHeader(HttpRequestData request)
+    {
+        if (!request.Headers.Contains("Cms-Auth-Values"))
+        {
+            return false;
+        }
+
+        var rawHeader = request.Headers.GetValues("Cms-Auth-Values")?.FirstOrDefault();
+        if (string.IsNullOrWhiteSpace(rawHeader))
+        {
+            return false;
+        }
+
+        try
+        {
+            var temp = JsonSerializer.Deserialize<JsonElement>(
+                rawHeader,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            if (!temp.TryGetProperty("Cookies", out var cookies) || string.IsNullOrWhiteSpace(cookies.GetString()))
+            {
+                return false;
+            }
+
+            if (!temp.TryGetProperty("Token", out var token) || string.IsNullOrWhiteSpace(token.GetString()))
+            {
+                return false;
+            }
+
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Extracts and deserializes the "Cms-Auth-Values" header from the HTTP request into a CmsAuthValues object.
+    /// </summary>
+    /// <param name="request">HttpRequestData.</param>
+    /// <returns>A nullable CMSAuthValues.</returns>
+    protected CmsAuthValues? GetCmsAuthValues(HttpRequestData request)
+    {
+        if (!request.Headers.Contains("Cms-Auth-Values"))
+        {
+            return null;
+        }
+
+        var rawHeader = request.Headers.GetValues("Cms-Auth-Values")?.FirstOrDefault();
+        if (string.IsNullOrWhiteSpace(rawHeader))
+        {
+            return null;
+        }
+
+        try
+        {
+            var temp = JsonSerializer.Deserialize<JsonElement>(
+                rawHeader,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            var cookies = temp.GetProperty("Cookies").GetString();
+            var token = temp.GetProperty("Token").GetString();
+
+            return new CmsAuthValues(cookies!, token!);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     /// <summary>
     /// Safely attempts to read and deserialise the request body as JSON of type <typeparamref name="T"/>.
     /// If the body is null/empty or if deserialisation fails, it returns null.
