@@ -10,13 +10,29 @@ using Newtonsoft.Json;
 /// <summary>
 /// Represents the authenticated user token.
 /// </summary>
-public class AuthenticatedUserDto
+public record AuthenticatedUserDto
 {
     /// <summary>
-    /// Gets or sets the authentication token  user.
+    /// Gets or sets the authentication token for case center user.
     /// </summary>
     [Required]
-    [JsonProperty("authToken")]
+    [JsonProperty("caseCenterAuthToken")]
     [JsonIgnore]
-    public string AuthToken { get; set; } = string.Empty;
+    public string CaseCenterAuthToken { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the Cms classic auth cookies.
+    /// </summary>
+    [Required]
+    [JsonProperty("cmsClassicAuthCookies")]
+    [JsonIgnore]
+    public string CmsClassicAuthCookies { get; set; } = string.Empty!;
+
+    /// <summary>
+    /// Gets or sets the Cms modern auth token.
+    /// </summary>
+    [Required]
+    [JsonProperty("cmsModernAuthToken")]
+    [JsonIgnore]
+    public string CmsModernAuthToken { get; set; } = string.Empty;
 }

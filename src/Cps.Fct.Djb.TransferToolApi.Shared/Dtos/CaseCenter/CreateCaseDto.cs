@@ -2,15 +2,16 @@
 // Copyright (c) The Crown Prosecution Service. All rights reserved.
 // </copyright>
 
-namespace Cps.Fct.Djb.TransferToolApi.Shared.Dtos.Case;
+namespace Cps.Fct.Djb.TransferToolApi.Shared.Dtos.CaseCenter;
 
 using System.ComponentModel.DataAnnotations;
+using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.Auth;
 using Newtonsoft.Json;
 
 /// <summary>
 /// Represents the request data for creating a case in case center.
 /// </summary>
-public record CreateCaseDto
+public record CreateCaseDto : AuthenticatedUserDto
 {
     /// <summary>
     /// Gets CmsCaseId.

@@ -15,7 +15,7 @@ using Cps.Fct.Djb.TransferToolApi.ApiClients.ConfigOptions;
 using Cps.Fct.Djb.TransferToolApi.ApiClients.Constants;
 using Cps.Fct.Djb.TransferToolApi.Shared.Constants;
 using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.Auth;
-using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.Case;
+using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.CaseCenter;
 using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.Common;
 using Cps.Fct.Djb.TransferToolApi.Shared.Extensions;
 using Cps.Fct.Djb.TransferToolApi.Shared.Helpers;
