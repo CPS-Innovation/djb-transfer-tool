@@ -4,6 +4,7 @@
 
 namespace Cps.Fct.Djb.TransferToolApi.ApiClients.Factories;
 
+using Cps.Fct.Djb.TransferToolApi.ApiClients.Clients;
 using Cps.Fct.Djb.TransferToolApi.ApiClients.Factories.Interfaces;
 using Cps.MasterDataService.Infrastructure.ApiClient;
 using Microsoft.Extensions.Configuration;
@@ -50,6 +51,6 @@ public class MdsApiClientFactory : IMdsApiClientFactory
         client.DefaultRequestHeaders.Add("x-functions-key", functionKey);
         client.DefaultRequestHeaders.Add("Cms-Auth-Values", cookieHeader);
 
-        return new MdsApiClient(client) { BaseUrl = baseUrl };
+        return new MdsPatchedDocumentsApiClient(client) { BaseUrl = baseUrl };
     }
 }

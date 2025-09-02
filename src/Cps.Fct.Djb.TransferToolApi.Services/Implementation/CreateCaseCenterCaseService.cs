@@ -68,7 +68,42 @@ public class CreateCaseCenterCaseService : ICreateCaseCenterCaseService
                 return HttpReturnResultDto<string>.Fail(HttpStatusCode.NotFound, message);
             }
 
-            #pragma warning disable SA1101 // Prefix local calls with this
+            // var document = await client.GetMaterialDocumentAsync(inputCreateCaseDto.CmsCaseId, "%252FZAV5IgaRnBGb%2524%25247KJHcDCndnmO5Q5nR-heBg%2524%2524m9hRpdmcrmHWavV4%252FIndictment_1.docx").ConfigureAwait(false);
+            var downloadPath = "/99ciHJPOTKUy$$TenxU9Jw_GUpiOHJuR6LBQ$$joxczrJjD__qRSFI/Indictment_1 .docx";
+            var encodedDownloadPath = Uri.EscapeDataString(Uri.EscapeDataString(downloadPath));
+
+            using (var stream = await client.GetMaterialDocumentAsync(inputCreateCaseDto.CmsCaseId, encodedDownloadPath).ConfigureAwait(false))
+            {
+                Console.WriteLine($"Stream length: {(stream.CanSeek ? stream.Length.ToString() : "Cannot determine")}");
+                Console.WriteLine($"Stream position: {(stream.CanSeek ? stream.Position.ToString() : "Cannot determine")}");
+
+                if (stream.CanSeek && stream.Position != 0)
+                {
+                    stream.Position = 0;
+                }
+
+                string safeFileName = "fxstest.docx";
+                string filePath = Path.Combine(Directory.GetCurrentDirectory(), safeFileName);
+
+                using (var fileStream = File.Create(filePath))
+                {
+                    await stream.CopyToAsync(fileStream).ConfigureAwait(false);
+                    Console.WriteLine($"Bytes written: {fileStream.Length}");
+                }
+            }
+
+            //    await using var documentStream = await client.GetMaterialDocumentAsync(inputCreateCaseDto.CmsCaseId, encodedDownloadPath).ConfigureAwait(false);
+            //// await using var documentStream = await client.GetMaterialDocumentAsync(inputCreateCaseDto.CmsCaseId, "%252FZAV5IgaRnBGb%2524%25247KJHcDCndnmO5Q5nR-heBg%2524%2524m9hRpdmcrmHWavV4%252FIndictment_1.docx").ConfigureAwait(false);
+
+            //// Create safe filename for saving locally
+            //string safeFileName = "fxstest.docx";
+            //string filePath = Path.Combine(Directory.GetCurrentDirectory(), safeFileName);
+
+            //// Save to disk directly from the stream
+            //await using var fileStream = File.Create(filePath);
+            //await documentStream.CopyToAsync(fileStream).ConfigureAwait(false);
+
+#pragma warning disable SA1101 // Prefix local calls with this
             var caseToCreateDto = inputCreateCaseDto with
             {
                 AreaCrownCourtCode = caseSummary.NextHearingVenueCode ?? string.Empty,
