@@ -178,7 +178,7 @@ public class CaseCenterApiClient : ICaseCenterApiClient
             string responsePayload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             if (string.IsNullOrWhiteSpace(responsePayload))
             {
-                return HttpReturnResultDto<string>.Fail(HttpStatusCode.InternalServerError, "No case center case id returned");
+                return HttpReturnResultDto<string>.Fail(HttpStatusCode.InternalServerError, "No case center case created");
             }
 
             this.logger.LogInformation($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(CaseCenterApiClient)}.{nameof(this.CreateCaseAsync)}: completed in [{sw.Elapsed}].");
@@ -188,6 +188,61 @@ public class CaseCenterApiClient : ICaseCenterApiClient
         {
             var message = $"Case Center API client encountered an error: {ex.Message}";
             this.logger.LogError($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(CaseCenterApiClient)}.{nameof(this.CreateCaseAsync)}: {message}");
+            return HttpReturnResultDto<string>.Fail(HttpStatusCode.InternalServerError, message);
+        }
+    }
+
+    /// <summary>
+    /// Gets case center case id based on the source system id.
+    /// Returns HttpReturnResultDto with a case center case id if successful.
+    ///   - id is non-null if success
+    ///   - id is null if failure (then statusCode is the server's code or 500 if exception).
+    /// </summary>
+    /// <param name="authenticationToken">The authentication token for the operation.</param>
+    /// <param name="sourceSystemCaseId">The source system case id.</param>
+    /// <returns>
+    /// A HttpResponseMessage.
+    /// </returns>
+    public async Task<HttpReturnResultDto<string>> GetCaseIdAsync(string authenticationToken, string sourceSystemCaseId)
+    {
+        try
+        {
+            var sw = Stopwatch.StartNew();
+            this.logger.LogInformation($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(CaseCenterApiClient)}.{nameof(this.GetCaseIdAsync)}: starting.");
+
+            Requires.NotNull(this.clientEndpointOptions);
+
+            Requires.NotNullOrWhiteSpace(sourceSystemCaseId);
+            Requires.NotNullOrWhiteSpace(authenticationToken);
+
+            var path = string.Format(
+                CultureInfo.InvariantCulture,
+                this.clientEndpointOptions.RelativePath[CaseCenterConfigConstants.CaseCenterApiGetCaseIdPathName],
+                Uri.EscapeDataString(sourceSystemCaseId ?? string.Empty));
+
+            var response = await this.SendRequestAsync<object>(
+                HttpMethod.Post,
+                path: path,
+                apiKey: authenticationToken).ConfigureAwait(false);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return HttpReturnResultDto<string>.Fail(response.StatusCode, response.ReasonPhrase);
+            }
+
+            string responsePayload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            if (string.IsNullOrWhiteSpace(responsePayload))
+            {
+                return HttpReturnResultDto<string>.Fail(HttpStatusCode.InternalServerError, "No case center case id returned");
+            }
+
+            this.logger.LogInformation($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(CaseCenterApiClient)}.{nameof(this.GetCaseIdAsync)}: completed in [{sw.Elapsed}].");
+            return HttpReturnResultDto<string>.Success(response.StatusCode, responsePayload);
+        }
+        catch (Exception ex)
+        {
+            var message = $"Case Center API client encountered an error: {ex.Message}";
+            this.logger.LogError($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(CaseCenterApiClient)}.{nameof(this.GetCaseIdAsync)}: {message}");
             return HttpReturnResultDto<string>.Fail(HttpStatusCode.InternalServerError, message);
         }
     }

@@ -30,4 +30,17 @@ public interface ICaseCenterApiClient
     /// A HttpResponseMessage.
     /// </returns>
     public Task<HttpReturnResultDto<string>> CreateCaseAsync(string authenticationToken, CreateCaseDto createCaseDto);
+
+    /// <summary>
+    /// Gets case center case id based on the source system id.
+    /// Returns HttpReturnResultDto with a case center case id if successful.
+    ///   - id is non-null if success
+    ///   - id is null if failure (then statusCode is the server's code or 500 if exception).
+    /// </summary>
+    /// <param name="authenticationToken">The authentication token for the operation.</param>
+    /// <param name="sourceSystemCaseId">The source system case id.</param>
+    /// <returns>
+    /// A HttpResponseMessage.
+    /// </returns>
+    public Task<HttpReturnResultDto<string>> GetCaseIdAsync(string authenticationToken, string sourceSystemCaseId);
 }
