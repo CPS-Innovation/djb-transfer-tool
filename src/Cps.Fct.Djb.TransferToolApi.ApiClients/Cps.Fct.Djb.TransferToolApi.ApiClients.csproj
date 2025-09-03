@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="Cps.Fct.Hk.Common.Infrastructure" Version="1.0.8" />
+    <PackageReference Include="Cps.MasterDataService.Infrastructure.ApiClient" Version="1.1.118327" />
     <PackageReference Include="Microsoft.VisualStudio.Validation" Version="17.8.8" />
   </ItemGroup>
 
