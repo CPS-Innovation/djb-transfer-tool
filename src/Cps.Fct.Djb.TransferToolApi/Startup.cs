@@ -48,7 +48,7 @@ public class Startup : CommonStartup
         IHealthChecksBuilder builder, IServiceCollection services)
     {
         builder
-            .AddCheck<AppSettingHealthCheck>("DDEIClient:baseuri");
+            .AddCheck<AppSettingHealthCheck>("DDEIClient:BaseAddress");
 
         RegisterTempHealthChecks(services);
     }
