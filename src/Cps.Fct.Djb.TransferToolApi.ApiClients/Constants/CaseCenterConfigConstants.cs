@@ -32,7 +32,7 @@ public static class CaseCenterConfigConstants
     /// <summary>
     /// Name of the Case Center Api path to GetCaseCenterCaseId.
     /// </summary>
-    public const string CaseCenterApiGetCasePathName = "GetCaseCenterCaseId";
+    public const string CaseCenterApiGetCaseIdPathName = "GetCaseCenterCaseId";
 
     /// <summary>
     /// Name of the Case Center Api path to GetTemplateCases.

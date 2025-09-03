@@ -35,6 +35,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IMdsApiClientFactory, MdsApiClientFactory>();
 
         services.AddScoped<IValidationService, ValidationService>();
+        services.AddScoped<IDebugService, DebugService>();
 
         var assembliesWithValidators = AppDomain.CurrentDomain.GetAssemblies()
         .Where(asm =>
