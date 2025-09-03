@@ -11,7 +11,8 @@
   <ItemGroup> 
     <PackageReference Include="Azure.Storage.Blobs" Version="12.24.0" /> 
     <PackageReference Include="Cps.Fct.Hk.Common.DDEI.Provider" Version="1.0.10" /> 
-    <PackageReference Include="Cps.Fct.Hk.Common.Infrastructure" Version="1.0.8" />
+    <PackageReference Include="Cps.Fct.Hk.Common.Infrastructure" Version="1.0.8" /> 
+    <PackageReference Include="Cps.MasterDataService.Infrastructure.ApiClient" Version="1.1.118327" />
 
     <PackageReference Include="FluentValidation" Version="11.11.0" />
 
