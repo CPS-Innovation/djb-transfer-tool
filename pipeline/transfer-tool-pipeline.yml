@@ -124,7 +124,7 @@ stages:
                   -WEBSITES_ENABLE_APP_SERVICE_STORAGE "true"
                   -FUNCTIONS_EXTENSION_VERSION "4"
                   -FUNCTIONS_WORKER_RUNTIME "dotnet-isolated"
-                  -DDEIClient__BaseAddress "https://fa-eas-app-ddei-dev.azurewebsites.net/api/"
+                  -DDEIClient__BaseAddress "https://fa-wm-app-ddei-dev.azurewebsites.net/api/"
                   -DDEIClient__FunctionKey "@Microsoft.KeyVault(SecretUri=https://kv-djb-dev.vault.azure.net/secrets/ddeiClient-fuctionKey)"
                   -CaseCenterApiClient_BaseAddress "https://beta.casecenter.thomsonreuters.com/LegacyAppApi/"
                   -CaseCenterApiClient_CredentialName "@Microsoft.KeyVault(SecretUri=https://kv-djb-dev.vault.azure.net/secrets/ccClient-CredentialName)"
