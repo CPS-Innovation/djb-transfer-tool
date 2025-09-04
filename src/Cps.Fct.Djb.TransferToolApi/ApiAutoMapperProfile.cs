@@ -5,8 +5,8 @@
 namespace Cps.Fct.Djb.TransferToolApi;
 
 using AutoMapper;
-using Cps.Fct.Djb.TransferToolApi.Models.Requests;
-using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.CaseCenter;
+using Cps.Fct.Djb.TransferToolApi.Models.Requests.Case;
+using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.CaseCenter.Case;
 using Cps.Fct.Djb.TransferToolApi.Shared.Interfaces;
 using Cps.Fct.Hk.Common.DDEI.Client.Model;
 

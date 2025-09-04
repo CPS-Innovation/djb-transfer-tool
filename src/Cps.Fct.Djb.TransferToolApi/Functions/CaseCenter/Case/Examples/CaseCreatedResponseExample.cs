@@ -1,11 +1,11 @@
-// <copyright file="CreateCaseCenterCaseResponseExample.cs" company="TheCrownProsecutionService">
+// <copyright file="CaseCreatedResponseExample.cs" company="TheCrownProsecutionService">
 // Copyright (c) The Crown Prosecution Service. All rights reserved.
 // </copyright>
 
-namespace Cps.Fct.Djb.TransferTool.FunctionApp.Functions.CaseCenter.Case.Examples;
+namespace Cps.Fct.Djb.TransferToolApi.Functions.CaseCenter.Case.Examples;
 
 using System.Diagnostics.CodeAnalysis;
-using Cps.Fct.Djb.TransferToolApi.Models.Responses;
+using Cps.Fct.Djb.TransferToolApi.Models.Responses.Case;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Abstractions;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Resolvers;
 using Newtonsoft.Json.Serialization;
@@ -14,7 +14,7 @@ using Newtonsoft.Json.Serialization;
 /// OpenAPI example generator for the response body of CreateCaseCenterCase.
 /// </summary>
 [ExcludeFromCodeCoverage]
-public class CreateCaseCenterCaseResponseExample
+public class CaseCreatedResponseExample
     : OpenApiExample<CaseCreatedResponse>
 {
     /// <inheritdoc/>
@@ -28,7 +28,7 @@ public class CreateCaseCenterCaseResponseExample
         };
 
         this.Examples.Add(OpenApiExampleResolver.Resolve(
-            "CreateCaseCenterCaseResponseExample",
+            "CaseCreatedResponseExample",
             exampleResponse,
             namingStrategy));
 

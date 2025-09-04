@@ -1,16 +1,16 @@
-// <copyright file="CreateCaseCenterCaseService.cs" company="TheCrownProsecutionService">
+// <copyright file="CreateCaseService.cs" company="TheCrownProsecutionService">
 // Copyright (c) The Crown Prosecution Service. All rights reserved.
 // </copyright>
 
-namespace Cps.Fct.Djb.TransferToolApi.Services.Implementation;
+namespace Cps.Fct.Djb.TransferToolApi.Services.Implementation.Case;
 
 using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Cps.Fct.Djb.TransferTool.Shared.Constants;
 using Cps.Fct.Djb.TransferToolApi.ApiClients.Factories.Interfaces;
-using Cps.Fct.Djb.TransferToolApi.Services.Implementation.Interfaces;
-using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.CaseCenter;
+using Cps.Fct.Djb.TransferToolApi.Services.Interfaces.Case;
+using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.CaseCenter.Case;
 using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.Common;
 using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.Mds;
 using Microsoft;
@@ -19,20 +19,20 @@ using Microsoft.Extensions.Logging;
 /// <summary>
 /// Create case center case service.
 /// </summary>
-public class CreateCaseCenterCaseService : ICreateCaseCenterCaseService
+public class CreateCaseService : ICreateCaseService
 {
-    private readonly ILogger<CreateCaseCenterCaseService> logger;
+    private readonly ILogger<CreateCaseService> logger;
     private readonly ICaseCenterApiClientFactory caseCenterApiClientFactory;
     private readonly IMdsApiClientFactory mdsApiClientFactory;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="CreateCaseCenterCaseService"/> class.
+    /// Initializes a new instance of the <see cref="CreateCaseService"/> class.
     /// </summary>
     /// <param name="logger">ILogger CreateCaseCenterCaseService.</param>
     /// <param name="caseCenterApiClientFactory">ICaseCenterApiClientFactory.</param>
     /// <param name="mdsApiClientFactory">IMdsApiClientFactory.</param>
-    public CreateCaseCenterCaseService(
-        ILogger<CreateCaseCenterCaseService> logger,
+    public CreateCaseService(
+        ILogger<CreateCaseService> logger,
         ICaseCenterApiClientFactory caseCenterApiClientFactory,
         IMdsApiClientFactory mdsApiClientFactory)
     {
@@ -64,7 +64,7 @@ public class CreateCaseCenterCaseService : ICreateCaseCenterCaseService
             if (caseSummary is null)
             {
                 var message = $"No case found in MDS for CMS Case ID {inputCreateCaseDto.CmsCaseId}";
-                this.logger.LogError($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(CreateCaseCenterCaseService)}.{nameof(this.CreateCaseAsync)}: Milestone - {message}");
+                this.logger.LogError($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(CreateCaseService)}.{nameof(this.CreateCaseAsync)}: Milestone - {message}");
                 return HttpReturnResultDto<string>.Fail(HttpStatusCode.NotFound, message);
             }
 
@@ -115,7 +115,7 @@ public class CreateCaseCenterCaseService : ICreateCaseCenterCaseService
         catch (Exception ex)
         {
             var message = $"Service encountered an error: {ex.Message}";
-            this.logger.LogError($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(CreateCaseCenterCaseService)}.{nameof(this.CreateCaseAsync)}: Milestone - {message}");
+            this.logger.LogError($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(CreateCaseService)}.{nameof(this.CreateCaseAsync)}: Milestone - {message}");
             return HttpReturnResultDto<string>.Fail(HttpStatusCode.InternalServerError, message);
         }
     }

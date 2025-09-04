@@ -4,7 +4,7 @@
 
 namespace Cps.Fct.Djb.TransferToolApi.ApiClients.Clients.Interfaces;
 
-using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.CaseCenter;
+using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.CaseCenter.Case;
 using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.Common;
 
 /// <summary>

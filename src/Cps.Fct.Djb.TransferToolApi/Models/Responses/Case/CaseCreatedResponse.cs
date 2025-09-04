@@ -2,7 +2,7 @@
 // Copyright (c) The Crown Prosecution Service. All rights reserved.
 // </copyright>
 
-namespace Cps.Fct.Djb.TransferToolApi.Models.Responses;
+namespace Cps.Fct.Djb.TransferToolApi.Models.Responses.Case;
 
 using System.ComponentModel.DataAnnotations;
 using Newtonsoft.Json;

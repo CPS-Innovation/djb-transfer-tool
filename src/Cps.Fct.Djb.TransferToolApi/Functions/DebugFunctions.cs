@@ -5,10 +5,8 @@
 namespace Cps.Fct.Djb.TransferToolApi.Functions;
 
 using System.Net;
-using Cps.Fct.Djb.TransferTool.FunctionApp.Functions.CaseCenter.Case.Examples;
 using Cps.Fct.Djb.TransferTool.Shared.Constants;
-using Cps.Fct.Djb.TransferToolApi.Models.Responses;
-using Cps.Fct.Djb.TransferToolApi.Services.Implementation.Interfaces;
+using Cps.Fct.Djb.TransferToolApi.Services.Interfaces;
 using Cps.MasterDataService.Infrastructure.ApiClient;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;

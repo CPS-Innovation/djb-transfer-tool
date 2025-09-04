@@ -2,7 +2,7 @@
 // Copyright (c) The Crown Prosecution Service. All rights reserved.
 // </copyright>
 
-namespace Cps.Fct.Djb.TransferToolApi.Services.Implementation.Interfaces;
+namespace Cps.Fct.Djb.TransferToolApi.Services.Interfaces;
 
 using System.Threading.Tasks;
 using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.Common;

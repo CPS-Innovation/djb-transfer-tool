@@ -4,7 +4,7 @@
 
 namespace Cps.Fct.Djb.TransferToolApi.Validators;
 
-using Cps.Fct.Djb.TransferToolApi.Models.Requests;
+using Cps.Fct.Djb.TransferToolApi.Models.Requests.Case;
 using Cps.Fct.Djb.TransferToolApi.Shared.Interfaces;
 using FluentValidation;
 
