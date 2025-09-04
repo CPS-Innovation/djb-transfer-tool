@@ -151,4 +151,24 @@ public abstract class BaseHttpFunction
         await badRequest.WriteAsJsonAsync(errorResponse).ConfigureAwait(false);
         return badRequest;
     }
+
+    /// <summary>
+    /// Gets a function's qualified name by extracting the namespace and class name
+    /// </summary>
+    /// <param name="type">The type.</param>
+    /// <returns>The qualified name.</returns>
+    protected string GetFunctionQualifiedName(Type type)
+    {
+        const string marker = "Functions.";
+
+        var fullName = type.FullName ?? type.Name;
+
+        var index = fullName.IndexOf(marker, StringComparison.Ordinal);
+        if (index < 0)
+        {
+            return fullName;
+        }
+
+        return fullName.Substring(index);
+    }
 }

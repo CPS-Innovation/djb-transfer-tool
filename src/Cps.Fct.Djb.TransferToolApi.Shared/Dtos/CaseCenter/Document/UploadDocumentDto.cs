@@ -1,8 +1,8 @@
-// <copyright file="AddDocumentToCaseDto.cs" company="TheCrownProsecutionService">
+// <copyright file="UploadDocumentDto.cs" company="TheCrownProsecutionService">
 // Copyright (c) The Crown Prosecution Service. All rights reserved.
 // </copyright>
 
-namespace Cps.Fct.Djb.TransferToolApi.Shared.Dtos.CaseCenter;
+namespace Cps.Fct.Djb.TransferToolApi.Shared.Dtos.CaseCenter.Document;
 
 using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.Auth;
 using Newtonsoft.Json;
@@ -11,25 +11,8 @@ using System.ComponentModel.DataAnnotations;
 /// <summary>
 /// Represents the request payload needed to add a document to a case.
 /// </summary>
-public record AddDocumentToCaseDto : AuthenticatedUserDto
+public record UploadDocumentDto : AuthenticatedUserDto
 {
-    [Required]
-    [JsonProperty("cmsUniqueId")]
-    [JsonIgnore]
-    public string CmsUniqueId { get; set; } = string.Empty;
-
-    [Required]
-    [JsonProperty("caseid")]
-    public string CaseId { get; set; } = string.Empty;
-
-    [Required]
-    [JsonProperty("sectionId")]
-    public string SectionId { get; set; } = string.Empty;
-
-    [Required]
-    [JsonProperty("username")]
-    public string Username { get; set; } = string.Empty;
-
     [Required]
     [JsonProperty("date")]
     public DateTimeOffset Date { get; set; } = DateTimeOffset.UtcNow;

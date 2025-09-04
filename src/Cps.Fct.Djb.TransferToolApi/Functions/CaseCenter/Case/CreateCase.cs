@@ -1,19 +1,20 @@
-// <copyright file="CreateCaseCenterCase.cs" company="TheCrownProsecutionService">
+// <copyright file="CreateCase.cs" company="TheCrownProsecutionService">
 // Copyright (c) The Crown Prosecution Service. All rights reserved.
 // </copyright>
 
-namespace Cps.Fct.Djb.TransferToolApi.Functions;
+namespace Cps.Fct.Djb.TransferToolApi.Functions.CaseCenter.Case;
 
 using System.Diagnostics;
 using System.Net;
 using AutoMapper;
-using Cps.Fct.Djb.TransferTool.FunctionApp.Functions.CaseCenter.Case.Examples;
 using Cps.Fct.Djb.TransferTool.Shared.Constants;
-using Cps.Fct.Djb.TransferToolApi.Functions.Examples;
-using Cps.Fct.Djb.TransferToolApi.Models.Requests;
-using Cps.Fct.Djb.TransferToolApi.Models.Responses;
-using Cps.Fct.Djb.TransferToolApi.Services.Implementation.Interfaces;
-using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.CaseCenter;
+using Cps.Fct.Djb.TransferToolApi.Functions;
+using Cps.Fct.Djb.TransferToolApi.Functions.CaseCenter.Case.Examples;
+using Cps.Fct.Djb.TransferToolApi.Models.Requests.Case;
+using Cps.Fct.Djb.TransferToolApi.Models.Responses.Case;
+using Cps.Fct.Djb.TransferToolApi.Services.Interfaces;
+using Cps.Fct.Djb.TransferToolApi.Services.Interfaces.Case;
+using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.CaseCenter.Case;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
@@ -25,22 +26,22 @@ using Microsoft.OpenApi.Models;
 /// Represents a function that creates a case in Case Center.
 /// </summary>
 /// <remarks>
-/// Initializes a new instance of the <see cref="CreateCaseCenterCase"/> class.
+/// Initializes a new instance of the <see cref="Case.CreateCase"/> class.
 /// </remarks>
 /// <param name="logger">The logger instance used to log information and errors.</param>
 /// <param name="autoMapper">IValidationService.</param>
 /// <param name="validationService">IMapper.</param>
 /// <param name="createCaseCenterCaseService">ICreateCaseCenterCaseService.</param>
-public class CreateCaseCenterCase(ILogger<CreateCaseCenterCase> logger,
+public class CreateCase(ILogger<CreateCase> logger,
     IValidationService validationService,
     IMapper autoMapper,
-    ICreateCaseCenterCaseService createCaseCenterCaseService)
+    ICreateCaseService createCaseCenterCaseService)
     : BaseHttpFunction()
 {
-    private readonly ILogger<CreateCaseCenterCase> logger = logger;
+    private readonly ILogger<CreateCase> logger = logger;
     private readonly IMapper autoMapper = autoMapper;
     private readonly IValidationService validationService = validationService;
-    private readonly ICreateCaseCenterCaseService createCaseCenterCaseService = createCaseCenterCaseService;
+    private readonly ICreateCaseService createCaseCenterCaseService = createCaseCenterCaseService;
 
     /// <summary>
     /// Creates a case in Case Center.
@@ -53,22 +54,22 @@ public class CreateCaseCenterCase(ILogger<CreateCaseCenterCase> logger,
     /// - 403 Unauthorized: Invalid credentials.
     /// - 500 Internal Server Error: Case Center API unavailable or unexpected issue.
     /// </returns>
-    [Function(nameof(CreateCaseCenterCase))]
+    [Function(nameof(Case.CreateCase))]
     [OpenApiOperation(operationId: "CreateCaseCenterCase", tags: ["Case"], Description = "Creates a case in Case Center using the Case Center API.")]
     [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, Name = "x-functions-key", In = OpenApiSecurityLocationType.Header, Description = "The Azure Function API Key.")]
     [OpenApiSecurity("cms_auth_values", SecuritySchemeType.ApiKey, Name = "Cms-Auth-Values", In = OpenApiSecurityLocationType.Header, Description = "The CMS Auth Values. This can be retrieved via the Authenticate API Endpoint.")]
-    [OpenApiRequestBody("application/json", typeof(CreateCaseRequest), Required = true, Description = "Payload for creating the case.", Example = typeof(CreateCaseCenterCaseRequestExample))]
-    [OpenApiResponseWithBody(HttpStatusCode.OK, "application/json", typeof(CaseCreatedResponse), Description = "Successfully created a case.", Example = typeof(CreateCaseCenterCaseResponseExample))]
+    [OpenApiRequestBody("application/json", typeof(CreateCaseRequest), Required = true, Description = "Payload for creating the case.", Example = typeof(CreateCaseRequestExample))]
+    [OpenApiResponseWithBody(HttpStatusCode.OK, "application/json", typeof(CaseCreatedResponse), Description = "Successfully created a case.", Example = typeof(CaseCreatedResponseExample))]
     [OpenApiResponseWithoutBody(HttpStatusCode.BadRequest, Description = "Missing or invalid request data.")]
     [OpenApiResponseWithoutBody(HttpStatusCode.Forbidden, Description = "Invalid username or password.")]
     [OpenApiResponseWithoutBody(HttpStatusCode.InternalServerError, Description = "Error creating case.")]
-    public async Task<HttpResponseData> CreateCase(
-        [HttpTrigger(AuthorizationLevel.Function, "post", Route = "case-center/case")] HttpRequestData request)
+    public async Task<HttpResponseData> Run(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "case-center/case")] HttpRequestData request)
     {
         try
         {
             var stopwatch = Stopwatch.StartNew();
-            this.logger.LogInformation($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(CreateCaseCenterCase)}.{nameof(this.CreateCase)}: Milestone - Function about to process a request.");
+            this.logger.LogInformation($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{this.GetFunctionQualifiedName(typeof(CreateCase))}.{nameof(this.Run)}: Milestone - Function about to process a request.");
 
             if (!this.HasCmsAuthValuesHeader(request))
             {
@@ -109,7 +110,7 @@ public class CreateCaseCenterCase(ILogger<CreateCaseCenterCase> logger,
         }
         catch (Exception ex)
         {
-            this.logger.LogError($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(CreateCaseCenterCase)}.{nameof(this.CreateCase)}: Milestone - Function encountered an error: {ex.Message}");
+            this.logger.LogError($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{this.GetFunctionQualifiedName(typeof(CreateCase))}.{nameof(this.Run)}: Milestone - Function encountered an error: {ex.Message}");
             return request.CreateResponse(HttpStatusCode.InternalServerError);
         }
     }

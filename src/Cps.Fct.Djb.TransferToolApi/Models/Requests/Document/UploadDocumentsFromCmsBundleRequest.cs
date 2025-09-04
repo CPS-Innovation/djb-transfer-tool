@@ -1,16 +1,16 @@
-// <copyright file="CreateCaseRequest.cs" company="TheCrownProsecutionService">
+// <copyright file="UploadDocumentsFromCmsBundleRequest.cs" company="TheCrownProsecutionService">
 // Copyright (c) The Crown Prosecution Service. All rights reserved.
 // </copyright>
 
-namespace Cps.Fct.Djb.TransferToolApi.Models.Requests;
+namespace Cps.Fct.Djb.TransferToolApi.Models.Requests.Document;
 
 using System.ComponentModel.DataAnnotations;
 using Newtonsoft.Json;
 
 /// <summary>
-/// Represents the request data for creating a case in case center.
+/// Represents the request data for uploading documents from cms bundle to a case in case center.
 /// </summary>
-public record CreateCaseRequest
+public record UploadDocumentsFromCmsBundleRequest
 {
     /// <summary>
     /// Gets CmsCaseId.

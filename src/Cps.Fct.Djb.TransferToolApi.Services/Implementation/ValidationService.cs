@@ -4,7 +4,7 @@
 
 namespace Cps.Fct.Djb.TransferToolApi.Services.Implementation;
 
-using Cps.Fct.Djb.TransferToolApi.Services.Implementation.Interfaces;
+using Cps.Fct.Djb.TransferToolApi.Services.Interfaces;
 using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.Common;
 using FluentValidation;
 using FluentValidation.Results;

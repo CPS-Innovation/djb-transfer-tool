@@ -9,7 +9,10 @@ using Cps.Fct.Djb.TransferToolApi.ApiClients.Constants;
 using Cps.Fct.Djb.TransferToolApi.ApiClients.Factories;
 using Cps.Fct.Djb.TransferToolApi.ApiClients.Factories.Interfaces;
 using Cps.Fct.Djb.TransferToolApi.Services.Implementation;
-using Cps.Fct.Djb.TransferToolApi.Services.Implementation.Interfaces;
+using Cps.Fct.Djb.TransferToolApi.Services.Implementation.Case;
+using Cps.Fct.Djb.TransferToolApi.Services.Interfaces;
+using Cps.Fct.Djb.TransferToolApi.Services.Interfaces.Case;
+using Cps.Fct.Djb.TransferToolApi.Services.Interfaces.Document;
 using Cps.Fct.Djb.TransferToolApi.Shared.Interfaces;
 using Cps.Fct.Hk.Common.DDEI.Provider;
 using FluentValidation;
@@ -68,7 +71,8 @@ public static class ServiceCollectionExtensions
         services.PostConfigure<CaseCenterOptions>(CaseCenterOptionsPostConfigure.BuildLookup);
         services.Configure<ClientEndpointOptions>(CaseCenterConfigConstants.CaseCenterApiClientConfigurationName, configuration.GetSection(CaseCenterConfigConstants.CaseCenterApiClientConfigurationName));
 
-        services.AddScoped<ICreateCaseCenterCaseService, CreateCaseCenterCaseService>();
+        services.AddScoped<ICreateCaseService, CreateCaseService>();
+        services.AddScoped<IUploadDocumentsFromCmsBundleService, UploadDocumentsFromCmsBundleService>();
         services.AddSingleton<ICaseCenterApiClientFactory, CaseCenterApiClientFactory>();
 
         return services;
