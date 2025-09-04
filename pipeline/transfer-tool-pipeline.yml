@@ -145,40 +145,59 @@ stages:
                   -CaseCenter_AreaCaseTemplateGroups_templateId  "4425c1da76a3410e8932bf998bb06d41",
                   -CaseCenter_AreaCaseTemplateGroups_courtCodes ["HULLCC"]
 
-####### Uncomment when environments become available #######                    
-# - stage: Staging
-#   displayName: Deploy Staging
-#   dependsOn: Dev
-#   condition: and(succeeded('Dev'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
-#   jobs:
-#     - deployment: Deploy
-#       environment: 'DJB-transfer-tool-staging'
-#       displayName: Deploy
-#       pool:
-#         name: $(buildAgentPool)
-#       strategy:
-#         runOnce:
-#           deploy:
-#             steps:
-#             - task: AzureFunctionApp@1
-#               inputs:
-#                 azureSubscription: 'DJB PreProd (via service principal)'
-#                 resourceGroupName: 'rg-djb-staging'
-#                 appType: 'functionAppLinux'
-#                 appName: '$(resourceName)-staging'
-#                 package: '$(Pipeline.Workspace)/$(buildArtifact)/Output/$(appName)'
-#                 deploymentMethod: runFromPackage
-#                 ConfigurationSettings: '-ApplicationName "$(appName)" ' 
-#                 appSettings:
-#                       -Environment "staging"
-#                       -Application__AppName "DJB Tranfer Tool API"
-#                       -Application__AppVersion "1.0.0"
-#                       -WEBSITE_ENABLE_SYNC_UPDATE_SITE "true"
-#                       -WEBSITE_USE_PLACEHOLDER_DOTNETISOLATED "1"
-#                       -WEBSITES_ENABLE_APP_SERVICE_STORAGE "true"
-#                       -FUNCTIONS_EXTENSION_VERSION "4"
-#                       -FUNCTIONS_WORKER_RUNTIME "dotnet-isolated"
-
+- stage: Staging
+  displayName: Deploy Staging
+  dependsOn: Dev
+  condition: and(succeeded('Dev'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  jobs:
+    - deployment: Deploy
+      environment: 'DJB-transfer-tool-staging'
+      displayName: Deploy
+      pool:
+        name: $(buildAgentPool)
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+            - task: AzureFunctionApp@1
+              inputs:
+                azureSubscription: 'DJB PreProd (via service principal)'
+                resourceGroupName: 'rg-djb-staging'
+                appType: 'functionAppLinux'
+                appName: '$(resourceName)-staging'
+                package: '$(Pipeline.Workspace)/$(buildArtifact)/Output/$(appName)'
+                deploymentMethod: runFromPackage
+                ConfigurationSettings: '-ApplicationName "$(appName)" ' 
+                appSettings:
+                      -Environment "staging"
+                      -Application__AppName "DJB Tranfer Tool API"
+                      -Application__AppVersion "1.0.0"
+                      -WEBSITE_ENABLE_SYNC_UPDATE_SITE "true"
+                      -WEBSITE_USE_PLACEHOLDER_DOTNETISOLATED "1"
+                      -WEBSITES_ENABLE_APP_SERVICE_STORAGE "true"
+                      -FUNCTIONS_EXTENSION_VERSION "4"
+                      -FUNCTIONS_WORKER_RUNTIME "dotnet-isolated"
+                      -DDEIClient__BaseAddress "https://fa-wm-app-ddei-staging.azurewebsites.net/api/"
+                      -DDEIClient__FunctionKey "@Microsoft.KeyVault(SecretUri=https://kv-djb-staging.vault.azure.net/secrets/ddeiClient-fuctionKey)"
+                      -CaseCenterApiClient_BaseAddress "https://beta.casecenter.thomsonreuters.com/LegacyAppApi/"
+                      -CaseCenterApiClient_CredentialName "@Microsoft.KeyVault(SecretUri=https://kv-djb-staging.vault.azure.net/secrets/ccClient-CredentialName)"
+                      -CaseCenterApiClient_CredentialPassword "@Microsoft.KeyVault(SecretUri=https://kv-djb-staging.vault.azure.net/secrets/ccClient-CredentialPassword)"
+                      -CaseCenterApiClient_RelativePath_GetToken "Token/GetToken"
+                      -CaseCenterApiClient_RelativePath_CreateCase "OutBundle/CreateCase?caseid={0}&casecreator={1}&organisationId={2}&casetitle={3}&templateId={4}&type={5}&sourceSystemCaseId={6}&departmentId={7}"
+                      -CaseCenterApiClient_RelativePath_GetCaseCenterCaseId "OutBundle/GetCasekey?sourceSystemCaseId={0}"
+                      -CaseCenterApiClient_RelativePath_GetTemplateCases "OutBundle/GetTemplateCases"
+                      -CaseCenterApiClient_RelativePath_GetBundlesInCase "OutBundle/GetBundlesInfo?caseid={0}"
+                      -CaseCenterApiClient_RelativePath_GetSectionsInBundle "OutBundle/GetSectionListForBundle?caseid={0}&bundleid={1}"
+                      -CaseCenterApiClient_RelativePath_AddUserToCase "OutBundle/AddUserToCase?caseKey={0}&userName={1}&bundleid={2}"
+                      -CaseCenterApiClient_RelativePath_UploadDocumentToCase "OutBundle/UploadDocument"
+                      -CaseCenter_OrganisationId "d1bc65066f7a4e19aa2de2c8245d66ec2f645a709ddb4151bceb414399c78f70"
+                      -CaseCenter_OrganisationType "Beta"
+                      -CaseCenter_MasterBundleName "Master Bundle"   
+                      -CaseCenter_IndictmentSectionName "Indictment"   
+                      -CaseCenter_ExhibitsSectionName "Exhibits"   
+                      -CaseCenter_AreaCaseTemplateGroups_templateId  "4425c1da76a3410e8932bf998bb06d41",
+                      -CaseCenter_AreaCaseTemplateGroups_courtCodes ["HULLCC"]
+                      
 # - stage: Production
 #   displayName: Deploy Production
 #   dependsOn: Staging
