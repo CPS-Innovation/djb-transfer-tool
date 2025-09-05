@@ -2,7 +2,7 @@
 // Copyright (c) The Crown Prosecution Service. All rights reserved.
 // </copyright>
 
-namespace Cps.Fct.Djb.TransferToolApi.Validators;
+namespace Cps.Fct.Djb.TransferToolApi.Validators.Case;
 
 using Cps.Fct.Djb.TransferToolApi.Models.Requests.Case;
 using Cps.Fct.Djb.TransferToolApi.Shared.Interfaces;

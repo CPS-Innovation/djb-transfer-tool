@@ -24,11 +24,22 @@ public class DocumentsUploadedFromCmsBundleResponseExample
         // Construct a sample token response
         var exampleResponse = new DocumentsUploadedFromCmsBundleResponse
         {
-            UploadedDocumentCaseCenterIds = new List<string>
+            DocumentResponses = new List<DocumentUploadResponse>()
             {
-                "d1f5c3e2b4a14f8e9c6e7a8b9c0d1e2f",
-                "a2b3c4d5e6f708192837465564738291",
-                "b1c2d3e4f5a607182736455667788990",
+                new DocumentUploadResponse()
+                {
+                    IsUploaded = true,
+                    CmsDocumentId = 100001,
+                    CaseCenterDocumentId = "d1f5c3e2b4a14f8e9c6e7a8b9c0d1e2f",
+                    ErrorMessage = string.Empty,
+                },
+                new DocumentUploadResponse()
+                {
+                    IsUploaded = false,
+                    CmsDocumentId = 100002,
+                    CaseCenterDocumentId = string.Empty,
+                    ErrorMessage = "Something went wrong",
+                },
             },
         };
 

@@ -18,5 +18,5 @@ public interface IUploadDocumentsFromCmsBundleService
     /// </summary>
     /// <param name="inputUploadDocumentsFromCmsBundleDto">The payload for the documents to be uploaded.</param>
     /// <returns>Returns the case center case idfor the created case.</returns>
-    public Task<HttpReturnResultDto<string>> UploadDocumentsFromCmsBundleAsync(UploadDocumentsFromCmsBundleDto inputUploadDocumentsFromCmsBundleDto);
+    public Task<HttpReturnResultDto<List<MultipleDocumentsUploadedFileDataDto>>> UploadDocumentsFromCmsBundleAsync(UploadDocumentsFromCmsBundleDto inputUploadDocumentsFromCmsBundleDto);
 }

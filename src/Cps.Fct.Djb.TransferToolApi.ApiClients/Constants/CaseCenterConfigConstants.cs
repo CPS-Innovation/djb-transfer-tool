@@ -35,11 +35,6 @@ public static class CaseCenterConfigConstants
     public const string CaseCenterApiGetCaseIdPathName = "GetCaseCenterCaseId";
 
     /// <summary>
-    /// Name of the Case Center Api path to GetTemplateCases.
-    /// </summary>
-    public const string CaseCenterApiGetTemplateCasesPathName = "GetTemplateCases";
-
-    /// <summary>
     /// Name of the Case Center Api path to GetBundlesInCase.
     /// </summary>
     public const string CaseCenterApiGetBundlesInCasePathName = "GetBundlesInCase";
@@ -50,12 +45,12 @@ public static class CaseCenterConfigConstants
     public const string CaseCenterApiGetSectionsInBundlePathName = "GetSectionsInBundle";
 
     /// <summary>
-    /// Name of the Case Center Api path to AddUserToCase.
-    /// </summary>
-    public const string CaseCenterApiAddUserToCasePathName = "AddUserToCase";
-
-    /// <summary>
     /// Name of the Case Center Api path to UploadDocumentToCase.
     /// </summary>
     public const string CaseCenterApiUploadDocumentToCasePathName = "UploadDocumentToCase";
+
+    /// <summary>
+    /// Name of the Case Center Api path to UploadMultipleDocumentsToCase.
+    /// </summary>
+    public const string CaseCenterApiUploadMultipleDocumentsToCasePathName = "UploadMultipleDocumentsToCase";
 }

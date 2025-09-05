@@ -68,17 +68,6 @@ public class CreateCaseService : ICreateCaseService
                 return HttpReturnResultDto<string>.Fail(HttpStatusCode.NotFound, message);
             }
 
-            //var downloadPath = "99ciHJPOTKUy$$TenxU9Jw_GUpiOHJuR6LBQ$$joxczrJjD__qRSFI/Indictment_1 .docx";
-            //var encodedDownloadPath = Uri.EscapeDataString(Uri.EscapeDataString(downloadPath));
-
-            //using (var fileResponse = await client.GetMaterialDocumentAsync(inputCreateCaseDto.CmsCaseId, encodedDownloadPath).ConfigureAwait(false))
-            //{
-            //    string fileName = fileResponse.GetFileName();
-            //    string contentType = fileResponse.GetContentType();
-            //    await fileResponse.SaveToFileAsync(Directory.GetCurrentDirectory()).ConfigureAwait(false);
-            //    Console.WriteLine($"File saved as: {fileName}");
-            //}
-
             #pragma warning disable SA1101 // Prefix local calls with this
             var caseToCreateDto = inputCreateCaseDto with
             {

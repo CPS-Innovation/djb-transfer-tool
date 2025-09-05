@@ -13,9 +13,9 @@ using Newtonsoft.Json;
 public record DocumentsUploadedFromCmsBundleResponse
 {
     /// <summary>
-    /// Gets UploadedDocumentCaseCenterIds.
+    /// Gets DocumentResponses.
     /// </summary>
     [Required]
-    [JsonProperty("uploadedDocumentCaseCenterIds")]
-    public IEnumerable<string> UploadedDocumentCaseCenterIds { get; init; } = new List<string>();
+    [JsonProperty("documentResponses")]
+    public IEnumerable<DocumentUploadResponse> DocumentResponses { get; init; } = new List<DocumentUploadResponse>();
 }

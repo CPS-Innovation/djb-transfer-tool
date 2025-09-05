@@ -20,6 +20,13 @@ public record UploadDocumentsFromCmsBundleRequest
     public int CmsCaseId { get; init; } = default!;
 
     /// <summary>
+    /// Gets CmsBundleId.
+    /// </summary>
+    [Required]
+    [JsonProperty("cmsBundleId")]
+    public int CmsBundleId { get; init; } = default!;
+
+    /// <summary>
     /// Gets CmsUsername.
     /// </summary>
     [Required]

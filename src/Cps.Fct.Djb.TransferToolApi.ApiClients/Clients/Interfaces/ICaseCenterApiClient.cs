@@ -5,6 +5,7 @@
 namespace Cps.Fct.Djb.TransferToolApi.ApiClients.Clients.Interfaces;
 
 using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.CaseCenter.Case;
+using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.CaseCenter.Document;
 using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.Common;
 
 /// <summary>
@@ -43,4 +44,34 @@ public interface ICaseCenterApiClient
     /// A HttpResponseMessage.
     /// </returns>
     public Task<HttpReturnResultDto<string>> GetCaseIdAsync(string authenticationToken, string sourceSystemCaseId);
+
+    /// <summary>
+    /// Gets the section id for the specified section from the specified bundle from the specified case.
+    /// Returns HttpReturnResultDto with a section id from case center if successful.
+    ///   - id is non-null if success
+    ///   - id is null if failure (then statusCode is the server's code or 500 if exception).
+    /// </summary>
+    /// <param name="authenticationToken">The authentication token for the operation.</param>
+    /// <param name="caseId">The case center case id.</param>
+    /// <param name="bundleId">The bundle id.</param>
+    /// <param name="sectionName">The section name.</param>
+    /// <returns>
+    /// A HttpResponseMessage.
+    /// </returns>
+    public Task<HttpReturnResultDto<string>> GetSectionIdAsync(string authenticationToken, string caseId, string bundleId, string sectionName);
+
+    /// <summary>
+    /// Uploads multiple files to the indictments section of the master bundle in the specified case.
+    /// Returns HttpReturnResultDto with a section id from case center if successful.
+    ///   - id is non-null if success
+    ///   - id is null if failure (then statusCode is the server's code or 500 if exception).
+    /// </summary>
+    /// <param name="authenticationToken">The authentication token for the operation.</param>
+    /// <param name="caseId">The case center case id.</param>
+    /// <param name="username">The username to impersonate.</param>
+    /// <param name="filesToUpload">The files to upload id.</param>
+    /// <returns>
+    /// A HttpResponseMessage.
+    /// </returns>
+    public Task<HttpReturnResultDto<List<MultipleDocumentsUploadedFileDataDto>>> AddIndictmentsToCaseSectionIdAsync(string authenticationToken, string caseId, string username, IEnumerable<UploadMultipleDocumentsFileDataDto> filesToUpload);
 }
