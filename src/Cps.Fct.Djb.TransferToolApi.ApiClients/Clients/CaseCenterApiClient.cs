@@ -7,15 +7,19 @@ namespace Cps.Fct.Djb.TransferToolApi.ApiClients.Clients;
 using System.Diagnostics;
 using System.Globalization;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text;
+using Azure.Core;
 using Cps.Fct.Djb.TransferTool.Shared.Constants;
 using Cps.Fct.Djb.TransferToolApi.ApiClients.Clients.Interfaces;
 using Cps.Fct.Djb.TransferToolApi.ApiClients.ConfigOptions;
 using Cps.Fct.Djb.TransferToolApi.ApiClients.Constants;
+using Cps.Fct.Djb.TransferToolApi.ApiClients.Models.Response.CaseCenter;
 using Cps.Fct.Djb.TransferToolApi.Shared.Constants;
 using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.Auth;
 using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.CaseCenter.Case;
+using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.CaseCenter.Document;
 using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.Common;
 using Cps.Fct.Djb.TransferToolApi.Shared.Extensions;
 using Cps.Fct.Djb.TransferToolApi.Shared.Helpers;
@@ -248,6 +252,265 @@ public class CaseCenterApiClient : ICaseCenterApiClient
     }
 
     /// <summary>
+    /// Gets the bundle id for the specified bundle from the specified case.
+    /// Returns HttpReturnResultDto with a bundle id from case center if successful.
+    ///   - id is non-null if success
+    ///   - id is null if failure (then statusCode is the server's code or 500 if exception).
+    /// </summary>
+    /// <param name="authenticationToken">The authentication token for the operation.</param>
+    /// <param name="caseId">The case center case id.</param>
+    /// <param name="bundleName">The bundle name.</param>
+    /// <returns>
+    /// A HttpResponseMessage.
+    /// </returns>
+    public async Task<HttpReturnResultDto<string>> GetBundleIdAsync(string authenticationToken, string caseId, string bundleName)
+    {
+        try
+        {
+            var sw = Stopwatch.StartNew();
+            this.logger.LogInformation($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(CaseCenterApiClient)}.{nameof(this.GetBundleIdAsync)}: starting.");
+
+            Requires.NotNull(this.clientEndpointOptions);
+
+            Requires.NotNullOrWhiteSpace(authenticationToken);
+            Requires.NotNullOrWhiteSpace(caseId);
+            Requires.NotNullOrWhiteSpace(bundleName);
+
+            var path = string.Format(
+                CultureInfo.InvariantCulture,
+                this.clientEndpointOptions.RelativePath[CaseCenterConfigConstants.CaseCenterApiGetBundlesInCasePathName],
+                Uri.EscapeDataString(caseId));
+
+            var response = await this.SendRequestAsync<object>(
+                HttpMethod.Post,
+                path: path,
+                apiKey: authenticationToken).ConfigureAwait(false);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return HttpReturnResultDto<string>.Fail(response.StatusCode, response.ReasonPhrase);
+            }
+
+            string responsePayload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            if (string.IsNullOrWhiteSpace(responsePayload))
+            {
+                return HttpReturnResultDto<string>.Fail(HttpStatusCode.InternalServerError, "No case center bundle returned");
+            }
+
+            var bundles = JsonConvert.DeserializeObject<List<BundleSummaryResponse>>(responsePayload);
+
+            if (bundles is null || !bundles.Any())
+            {
+                return HttpReturnResultDto<string>.Fail(HttpStatusCode.InternalServerError, "No bundles in case found");
+            }
+
+            var bundle = bundles.FirstOrDefault(b => string.Equals(b.Name, bundleName, StringComparison.OrdinalIgnoreCase));
+
+            if (bundle is null)
+            {
+                return HttpReturnResultDto<string>.Fail(HttpStatusCode.InternalServerError, $"No bundle with name '{bundleName}' found in case");
+            }
+
+            responsePayload = bundle.Id ?? string.Empty;
+
+            this.logger.LogInformation($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(CaseCenterApiClient)}.{nameof(this.GetBundleIdAsync)}: completed in [{sw.Elapsed}].");
+            return HttpReturnResultDto<string>.Success(response.StatusCode, responsePayload);
+        }
+        catch (Exception ex)
+        {
+            var message = $"Case Center API client encountered an error: {ex.Message}";
+            this.logger.LogError($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(CaseCenterApiClient)}.{nameof(this.GetBundleIdAsync)}: {message}");
+            return HttpReturnResultDto<string>.Fail(HttpStatusCode.InternalServerError, message);
+        }
+    }
+
+    /// <summary>
+    /// Gets the section id for the specified section from the specified bundle from the specified case.
+    /// Returns HttpReturnResultDto with a section id from case center if successful.
+    ///   - id is non-null if success
+    ///   - id is null if failure (then statusCode is the server's code or 500 if exception).
+    /// </summary>
+    /// <param name="authenticationToken">The authentication token for the operation.</param>
+    /// <param name="caseId">The case center case id.</param>
+    /// <param name="bundleId">The bundle id.</param>
+    /// <param name="sectionName">The section name.</param>
+    /// <returns>
+    /// A HttpResponseMessage.
+    /// </returns>
+    public async Task<HttpReturnResultDto<string>> GetSectionIdAsync(string authenticationToken, string caseId, string bundleId, string sectionName)
+    {
+        try
+        {
+            var sw = Stopwatch.StartNew();
+            this.logger.LogInformation($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(CaseCenterApiClient)}.{nameof(this.GetSectionIdAsync)}: starting.");
+
+            Requires.NotNull(this.clientEndpointOptions);
+
+            Requires.NotNullOrWhiteSpace(authenticationToken);
+            Requires.NotNullOrWhiteSpace(caseId);
+            Requires.NotNullOrWhiteSpace(bundleId);
+            Requires.NotNullOrWhiteSpace(sectionName);
+
+            var path = string.Format(
+                CultureInfo.InvariantCulture,
+                this.clientEndpointOptions.RelativePath[CaseCenterConfigConstants.CaseCenterApiGetSectionsInBundlePathName],
+                Uri.EscapeDataString(caseId), Uri.EscapeDataString(bundleId));
+
+            var response = await this.SendRequestAsync<object>(
+                HttpMethod.Post,
+                path: path,
+                apiKey: authenticationToken).ConfigureAwait(false);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return HttpReturnResultDto<string>.Fail(response.StatusCode, response.ReasonPhrase);
+            }
+
+            string responsePayload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            if (string.IsNullOrWhiteSpace(responsePayload))
+            {
+                return HttpReturnResultDto<string>.Fail(HttpStatusCode.InternalServerError, "No case center section returned");
+            }
+
+            var sections = JsonConvert.DeserializeObject<List<BundleSectionSummaryResponse>>(responsePayload);
+
+            if (sections is null || !sections.Any())
+            {
+                return HttpReturnResultDto<string>.Fail(HttpStatusCode.InternalServerError, "No sections in case bundle found");
+            }
+
+            var section = sections.FirstOrDefault(b => string.Equals(b.SectionName, sectionName, StringComparison.OrdinalIgnoreCase));
+
+            if (section is null)
+            {
+                return HttpReturnResultDto<string>.Fail(HttpStatusCode.InternalServerError, $"No section with name '{sectionName}' found in case bundle");
+            }
+
+            responsePayload = section.SectionId ?? string.Empty;
+
+            this.logger.LogInformation($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(CaseCenterApiClient)}.{nameof(this.GetSectionIdAsync)}: completed in [{sw.Elapsed}].");
+            return HttpReturnResultDto<string>.Success(response.StatusCode, responsePayload);
+        }
+        catch (Exception ex)
+        {
+            var message = $"Case Center API client encountered an error: {ex.Message}";
+            this.logger.LogError($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(CaseCenterApiClient)}.{nameof(this.GetSectionIdAsync)}: {message}");
+            return HttpReturnResultDto<string>.Fail(HttpStatusCode.InternalServerError, message);
+        }
+    }
+
+    /// <summary>
+    /// Uploads multiple files to the indictments section of the master bundle in the specified case.
+    /// Returns HttpReturnResultDto with a section id from case center if successful.
+    ///   - id is non-null if success
+    ///   - id is null if failure (then statusCode is the server's code or 500 if exception).
+    /// </summary>
+    /// <param name="authenticationToken">The authentication token for the operation.</param>
+    /// <param name="caseId">The case center case id.</param>
+    /// <param name="username">The username to impersonate.</param>
+    /// <param name="filesToUpload">The files to upload id.</param>
+    /// <returns>
+    /// A HttpResponseMessage.
+    /// </returns>
+    public async Task<HttpReturnResultDto<List<MultipleDocumentsUploadedFileDataDto>>> AddIndictmentsToCaseSectionIdAsync(string authenticationToken, string caseId, string username, IEnumerable<UploadMultipleDocumentsFileDataDto> filesToUpload)
+    {
+        try
+        {
+            var sw = Stopwatch.StartNew();
+            this.logger.LogInformation($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(CaseCenterApiClient)}.{nameof(this.AddIndictmentsToCaseSectionIdAsync)}: starting.");
+
+            Requires.NotNull(this.clientEndpointOptions);
+
+            Requires.NotNullOrWhiteSpace(authenticationToken);
+            Requires.NotNullOrWhiteSpace(caseId);
+
+            var getBundleIdResponse = await this.GetBundleIdAsync(authenticationToken, caseId, caseCenterOptions.MasterBundleName).ConfigureAwait(false);
+            if (!getBundleIdResponse.IsSuccess || string.IsNullOrWhiteSpace(getBundleIdResponse.Data))
+            {
+                var message = $"Failed to get bundle id for case id '{caseId}'. Status code: {getBundleIdResponse.StatusCode}, Message: {getBundleIdResponse.Message}";
+                this.logger.LogError($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(CaseCenterApiClient)}.{nameof(this.AddIndictmentsToCaseSectionIdAsync)}: {message}");
+                return HttpReturnResultDto<List<MultipleDocumentsUploadedFileDataDto>>.Fail(getBundleIdResponse.StatusCode, message);
+            }
+            var bundleId = getBundleIdResponse.Data;
+
+            var getSectionIdResponse = await this.GetSectionIdAsync(authenticationToken, caseId, bundleId, caseCenterOptions.IndictmentSectionName).ConfigureAwait(false);
+            if (!getSectionIdResponse.IsSuccess || string.IsNullOrWhiteSpace(getSectionIdResponse.Data))
+            {
+                var message = $"Failed to get section id for case id '{caseId}' and bundle id '{bundleId}'. Status code: {getSectionIdResponse.StatusCode}, Message: {getSectionIdResponse.Message}";
+                this.logger.LogError($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(CaseCenterApiClient)}.{nameof(this.AddIndictmentsToCaseSectionIdAsync)}: {message}");
+                return HttpReturnResultDto<List<MultipleDocumentsUploadedFileDataDto>>.Fail(getSectionIdResponse.StatusCode, message);
+            }
+            var sectionId = getSectionIdResponse.Data;
+
+            var path = string.Format(
+                CultureInfo.InvariantCulture,
+                this.clientEndpointOptions.RelativePath[CaseCenterConfigConstants.CaseCenterApiUploadMultipleDocumentsToCasePathName],
+                Uri.EscapeDataString(caseId),
+                true,
+                Uri.EscapeDataString(sectionId),
+                Uri.EscapeDataString(username)
+                );
+
+            using var form = new MultipartFormDataContent();
+
+            // Add each file
+            foreach (var file in filesToUpload)
+            {
+                var fileContent = new ByteArrayContent(file.Content);
+                fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
+                form.Add(fileContent, "uploadFiles", file.FileName);
+            }
+
+            // Add extra fields
+            form.Add(new StringContent(false.ToString().ToLowerInvariant()), "bookmarkedPDF");
+
+            foreach (var file in filesToUpload)
+            {
+                form.Add(new StringContent(file.Checksum), "checkSums");
+            }
+
+            var response = await this.SendRequestAsync<object>(
+                HttpMethod.Post,
+                path: path,
+                payload: form,
+                contentType: ApiContentTypeConstants.MultipartFormData,
+                apiKey: authenticationToken).ConfigureAwait(false);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return HttpReturnResultDto<List<MultipleDocumentsUploadedFileDataDto>>.Fail(response.StatusCode, response.ReasonPhrase);
+            }
+
+            string uploadedDocumentsResponse = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            if (string.IsNullOrWhiteSpace(uploadedDocumentsResponse))
+            {
+                return HttpReturnResultDto<List<MultipleDocumentsUploadedFileDataDto>>.Fail(HttpStatusCode.InternalServerError, "No case center section returned");
+            }
+
+            var uploadedDocuments = JsonConvert.DeserializeObject<List<UploadDocumentResponse>>(uploadedDocumentsResponse);
+
+            var responsePayload = uploadedDocuments?.Select(d => new MultipleDocumentsUploadedFileDataDto
+            {
+                CaseCenterDocumentId = d.DocumentId ?? string.Empty,
+                CmsDocumentId = filesToUpload.FirstOrDefault(x => x.FileName.Equals(d.Filename, StringComparison.InvariantCultureIgnoreCase))?.CmsDocumentId ?? 0,
+                ErrorCode = d.UploadError.ErrorCode ?? string.Empty,
+                ErrorMessage = d.UploadError.ErrorMessage ?? string.Empty,
+                Filename = d.Filename ?? string.Empty,
+                UploadStatus = d.UploadStatus,
+            }).ToList() ?? new List<MultipleDocumentsUploadedFileDataDto>();
+
+            this.logger.LogInformation($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(CaseCenterApiClient)}.{nameof(this.AddIndictmentsToCaseSectionIdAsync)}: completed in [{sw.Elapsed}].");
+            return HttpReturnResultDto<List<MultipleDocumentsUploadedFileDataDto>>.Success(response.StatusCode, responsePayload);
+        }
+        catch (Exception ex)
+        {
+            var message = $"Case Center API client encountered an error: {ex.Message}";
+            this.logger.LogError($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(CaseCenterApiClient)}.{nameof(this.AddIndictmentsToCaseSectionIdAsync)}: {message}");
+            return HttpReturnResultDto<List<MultipleDocumentsUploadedFileDataDto>>.Fail(HttpStatusCode.InternalServerError, message);
+        }
+    }
+
+    /// <summary>
     /// Sends an HTTP request to the configured base address + specified path.
     /// If <paramref name="payload"/> is non-null, it will be serialized to JSON and sent as the request body.
     /// </summary>
@@ -282,59 +545,16 @@ public class CaseCenterApiClient : ICaseCenterApiClient
                     }
 
                 case ApiContentTypeConstants.MultipartFormData:
+                    if (payload is HttpContent httpContent)
                     {
-                        var formData = new MultipartFormDataContent();
-                        var resolver = new DefaultContractResolver();
-                        var contract = resolver.ResolveContract(typeof(TPayload)) as JsonObjectContract;
-
-                        if (contract != null)
-                        {
-                            foreach (var jsonProp in contract.Properties)
-                            {
-                                if (jsonProp.Ignored)
-                                {
-                                    continue;
-                                }
-
-                                if (string.IsNullOrWhiteSpace(jsonProp.UnderlyingName))
-                                {
-                                    continue;
-                                }
-
-                                var clrProp = typeof(TPayload).GetProperty(jsonProp.UnderlyingName, BindingFlags.Public | BindingFlags.Instance);
-                                if (clrProp == null)
-                                {
-                                    continue;
-                                }
-
-                                var value = clrProp.GetValue(payload);
-                                if (value == null)
-                                {
-                                    continue;
-                                }
-
-                                var name = jsonProp.PropertyName;
-
-                                if (string.IsNullOrWhiteSpace(name))
-                                {
-                                    continue;
-                                }
-
-                                string stringValue = value switch
-                                {
-                                    DateTimeOffset dto => dto.ToUniversalTime().ToString("o"),
-                                    DateTime dt => dt.ToUniversalTime().ToString("o"),
-                                    bool b => b.ToString().ToLowerInvariant(),
-                                    _ => value?.ToString() ?? string.Empty,
-                                };
-
-                                formData.Add(new StringContent(stringValue!), name);
-                            }
-                        }
-
-                        request.Content = formData;
-                        break;
+                        request.Content = httpContent;
                     }
+                    else
+                    {
+                        throw new NotSupportedException(
+                            "Only pre-built HttpContent is supported for multipart form-data.");
+                    }
+                    break;
 
                 default:
                     throw new NotSupportedException($"Unsupported content type: {contentType}");

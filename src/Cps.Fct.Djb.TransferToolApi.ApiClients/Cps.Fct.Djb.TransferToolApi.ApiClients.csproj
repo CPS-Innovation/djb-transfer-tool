@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Dtos\" />
+    <Folder Include="Models\Requests\" />
   </ItemGroup>
 
   <ItemGroup>

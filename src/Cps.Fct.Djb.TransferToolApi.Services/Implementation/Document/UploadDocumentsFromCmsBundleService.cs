@@ -15,6 +15,12 @@ using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.Common;
 using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.Mds;
 using Microsoft;
 using Microsoft.Extensions.Logging;
+using Cps.Fct.Djb.TransferToolApi.Shared.Extensions;
+using System.Globalization;
+using System.Buffers.Text;
+using System.Text;
+using System.Security.Cryptography;
+using System.Collections.Generic;
 
 /// <summary>
 /// UploadDocumentsFromCmsBundle service.
@@ -46,79 +52,168 @@ public class UploadDocumentsFromCmsBundleService : IUploadDocumentsFromCmsBundle
     /// </summary>
     /// <param name="inputUploadDocumentsFromCmsBundleDto">The payload for the documents to be uploaded.</param>
     /// <returns>Returns the case center case idfor the created case.</returns>
-    public async Task<HttpReturnResultDto<string>> UploadDocumentsFromCmsBundleAsync(UploadDocumentsFromCmsBundleDto inputUploadDocumentsFromCmsBundleDto)
+    public async Task<HttpReturnResultDto<List<MultipleDocumentsUploadedFileDataDto>>> UploadDocumentsFromCmsBundleAsync(UploadDocumentsFromCmsBundleDto inputUploadDocumentsFromCmsBundleDto)
     {
         try
         {
             Requires.NotNull(inputUploadDocumentsFromCmsBundleDto);
             Requires.NotNull(inputUploadDocumentsFromCmsBundleDto.CmsCaseId);
+            Requires.NotNull(inputUploadDocumentsFromCmsBundleDto.CmsBundleId);
             Requires.NotNull(inputUploadDocumentsFromCmsBundleDto.DocumentUploader);
             Requires.NotNull(inputUploadDocumentsFromCmsBundleDto.CmsModernAuthToken);
             Requires.NotNull(inputUploadDocumentsFromCmsBundleDto.CmsClassicAuthCookies);
 
-            //// get the case from MDS
-            //var cookie = new MdsCookie(inputCreateCaseDto.CmsClassicAuthCookies, inputCreateCaseDto.CmsModernAuthToken);
-            //var client = this.mdsApiClientFactory.Create(JsonSerializer.Serialize(cookie));
-            //var caseSummary = await client.GetCaseSummaryAsync(inputCreateCaseDto.CmsCaseId).ConfigureAwait(false);
+            // get the case from MDS
+            var cookie = new MdsCookie(inputUploadDocumentsFromCmsBundleDto.CmsClassicAuthCookies, inputUploadDocumentsFromCmsBundleDto.CmsModernAuthToken);
+            var client = this.mdsApiClientFactory.Create(JsonSerializer.Serialize(cookie));
+            var caseSummary = await client.GetCaseSummaryAsync(inputUploadDocumentsFromCmsBundleDto.CmsCaseId).ConfigureAwait(false);
 
-            //if (caseSummary is null)
-            //{
-            //    var message = $"No case found in MDS for CMS Case ID {inputCreateCaseDto.CmsCaseId}";
-            //    this.logger.LogError($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(CreateCaseService)}.{nameof(this.CreateCaseAsync)}: Milestone - {message}");
-            //    return HttpReturnResultDto<string>.Fail(HttpStatusCode.NotFound, message);
-            //}
+            if (caseSummary is null)
+            {
+                var message = $"No case found in MDS for CMS Case ID {inputUploadDocumentsFromCmsBundleDto.CmsCaseId}";
+                this.logger.LogError($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(UploadDocumentsFromCmsBundleService)}.{nameof(this.UploadDocumentsFromCmsBundleAsync)}: Milestone - {message}");
+                return HttpReturnResultDto<List<MultipleDocumentsUploadedFileDataDto>>.Fail(HttpStatusCode.NotFound, message);
+            }
 
-            //var downloadPath = "99ciHJPOTKUy$$TenxU9Jw_GUpiOHJuR6LBQ$$joxczrJjD__qRSFI/Indictment_1 .docx";
-            //var encodedDownloadPath = Uri.EscapeDataString(Uri.EscapeDataString(downloadPath));
+            var caseCenterApiClient = this.caseCenterApiClientFactory.Create(string.Empty);
 
-            //using (var fileResponse = await client.GetMaterialDocumentAsync(inputCreateCaseDto.CmsCaseId, encodedDownloadPath).ConfigureAwait(false))
-            //{
-            //    string fileName = fileResponse.GetFileName();
-            //    string contentType = fileResponse.GetContentType();
-            //    await fileResponse.SaveToFileAsync(Directory.GetCurrentDirectory()).ConfigureAwait(false);
-            //    Console.WriteLine($"File saved as: {fileName}");
-            //}
+            var getAdminAuthTokenResponse = await caseCenterApiClient.GetAuthTokenAsync().ConfigureAwait(false);
 
-            //#pragma warning disable SA1101 // Prefix local calls with this
-            //var caseToCreateDto = inputCreateCaseDto with
-            //{
-            //    AreaCrownCourtCode = caseSummary.NextHearingVenueCode ?? string.Empty,
-            //    CaseUrn = caseSummary.Urn ?? string.Empty,
-            //    CaseTitle = caseSummary.LeadDefendantFirstNames + " " + caseSummary.LeadDefendantSurname?.ToUpper(),
-            //};
-            //#pragma warning restore SA1101
+            if (!getAdminAuthTokenResponse.IsSuccess)
+            {
+                var message = $"Unable to Case Center authentication token. Reason: {getAdminAuthTokenResponse.Message}";
+                this.logger.LogError($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(UploadDocumentsFromCmsBundleService)}.{nameof(this.UploadDocumentsFromCmsBundleAsync)}: Milestone - {message}");
+                return HttpReturnResultDto<List<MultipleDocumentsUploadedFileDataDto>>.Fail(HttpStatusCode.NotFound, message);
+            }
 
-            //// get the admin auth token from case center
-            //var caseCenterApiClient = this.caseCenterApiClientFactory.Create(string.Empty);
+            inputUploadDocumentsFromCmsBundleDto.CaseCenterAuthToken = getAdminAuthTokenResponse.Data;
 
-            //var getAdminAuthTokenResponse = await caseCenterApiClient.GetAuthTokenAsync().ConfigureAwait(false);
+            var getCaseIdResponse = await caseCenterApiClient.GetCaseIdAsync(inputUploadDocumentsFromCmsBundleDto.CaseCenterAuthToken, inputUploadDocumentsFromCmsBundleDto.CmsCaseId.ToString(CultureInfo.InvariantCulture)).ConfigureAwait(false);
 
-            //if (!getAdminAuthTokenResponse.IsSuccess)
-            //{
-            //    return getAdminAuthTokenResponse;
-            //}
+            if (!getCaseIdResponse.IsSuccess)
+            {
+                var message = $"Unable to Case Center case id. Reason: {getCaseIdResponse.Message}";
+                this.logger.LogError($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(UploadDocumentsFromCmsBundleService)}.{nameof(this.UploadDocumentsFromCmsBundleAsync)}: Milestone - {message}");
+                return HttpReturnResultDto<List<MultipleDocumentsUploadedFileDataDto>>.Fail(HttpStatusCode.NotFound, message);
+            }
 
-            //var caseCenterAuthToken = getAdminAuthTokenResponse.Data;
+            var caseCenterCaseId = getCaseIdResponse.Data;
 
-            //// now create the case
-            //var createCaseCenterCaseResponse = await caseCenterApiClient.CreateCaseAsync(caseCenterAuthToken, caseToCreateDto).ConfigureAwait(false);
+            // get the bundle material from MDS
+            var bundleMaterials = await client.ListBundleMaterialsAsync(inputUploadDocumentsFromCmsBundleDto.CmsCaseId, inputUploadDocumentsFromCmsBundleDto.CmsBundleId).ConfigureAwait(false);
 
-            //if (!createCaseCenterCaseResponse.IsSuccess)
-            //{
-            //    return createCaseCenterCaseResponse;
-            //}
+            if (bundleMaterials is null)
+            {
+                var message = $"No bundles found in MDS for CMS Bundle ID {inputUploadDocumentsFromCmsBundleDto.CmsBundleId}";
+                this.logger.LogError($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(UploadDocumentsFromCmsBundleService)}.{nameof(this.UploadDocumentsFromCmsBundleAsync)}: Milestone - {message}");
+                return HttpReturnResultDto<List<MultipleDocumentsUploadedFileDataDto>>.Fail(HttpStatusCode.NotFound, message);
+            }
 
-            //var caseCenterCaseId = createCaseCenterCaseResponse.Data;
+            // for each document in the bundle, get the document from MDS
+            var downloadTasks = bundleMaterials.Select(async bm =>
+            {
+                if (string.IsNullOrWhiteSpace(bm.Link))
+                {
+                    return new KeyValuePair<int, UploadMultipleDocumentsFileDataDto?>(bm.DocumentId, null);
+                }
 
-            //return HttpReturnResultDto<string>.Success(HttpStatusCode.Created, caseCenterCaseId);
+                var encodedDownloadPath = Uri.EscapeDataString(Uri.EscapeDataString(bm.Link));
 
-            throw new NotImplementedException();
+                try
+                {
+                    using var fileResponse = await client
+                        .GetMaterialDocumentAsync(inputUploadDocumentsFromCmsBundleDto.CmsCaseId, encodedDownloadPath)
+                        .ConfigureAwait(false);
+
+                    string fileName = fileResponse.GetFileName();
+                    string contentType = fileResponse.GetContentType();
+                    byte[] fileContents = await fileResponse.ToByteArrayAsync().ConfigureAwait(false);
+                    string base64Content = Convert.ToBase64String(fileContents);
+
+                    byte[] digest = SHA256.HashData(Encoding.UTF8.GetBytes(base64Content));
+                    string checksum = Convert.ToHexString(digest).ToLowerInvariant();
+
+                    return new KeyValuePair<int, UploadMultipleDocumentsFileDataDto?>(bm.DocumentId, new UploadMultipleDocumentsFileDataDto()
+                    {
+                        FileName = fileName,
+                        ContentType = contentType,
+                        Content = fileContents,
+                        Base64EncodedContent = base64Content,
+                        Checksum = checksum,
+                        CmsDocumentId = bm.DocumentId,
+                    });
+                }
+                catch(Exception getMaterialDocumentException)
+                {
+                    var message = $"Get document from CMS encountered an error: {getMaterialDocumentException.Message}";
+                    this.logger.LogError($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(UploadDocumentsFromCmsBundleService)}.{nameof(this.UploadDocumentsFromCmsBundleAsync)}: Milestone - {message}");
+                    return new KeyValuePair<int, UploadMultipleDocumentsFileDataDto?>(bm.DocumentId, null);
+                }
+            });
+
+            var documentsFromMds = (await Task.WhenAll(downloadTasks).ConfigureAwait(false)).ToList();
+
+            // all files that were not downloaded
+            var documentsNotDownloaded = documentsFromMds
+                .Where(x => x.Value is null);
+            var indictmentDocuments = documentsFromMds
+                .Where(x => x.Value is not null && x.Value.FileName.StartsWith("Indictment/", StringComparison.InvariantCultureIgnoreCase));
+            var exhibitDocuments = documentsFromMds
+                .Where(x => x.Value is not null && !x.Value.FileName.StartsWith("Indictment/", StringComparison.InvariantCultureIgnoreCase));
+
+            getAdminAuthTokenResponse = await caseCenterApiClient.GetAuthTokenAsync().ConfigureAwait(false);
+
+            if (!getAdminAuthTokenResponse.IsSuccess)
+            {
+                var message = $"Unable to Case Center authentication token. Reason: {getAdminAuthTokenResponse.Message}";
+                this.logger.LogError($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(UploadDocumentsFromCmsBundleService)}.{nameof(this.UploadDocumentsFromCmsBundleAsync)}: Milestone - {message}");
+                return HttpReturnResultDto<List<MultipleDocumentsUploadedFileDataDto>>.Fail(HttpStatusCode.NotFound, message);
+            }
+
+            var addIndictmentDocumentsResponse = await caseCenterApiClient
+                .AddIndictmentsToCaseSectionIdAsync(
+                inputUploadDocumentsFromCmsBundleDto.CaseCenterAuthToken,
+                caseCenterCaseId,
+                inputUploadDocumentsFromCmsBundleDto.DocumentUploader,
+                indictmentDocuments.Select(x => x.Value).ToList()).ConfigureAwait(false);
+
+            var addExhibitDocumentsResponse = await caseCenterApiClient
+                .AddIndictmentsToCaseSectionIdAsync(
+                inputUploadDocumentsFromCmsBundleDto.CaseCenterAuthToken,
+                caseCenterCaseId,
+                inputUploadDocumentsFromCmsBundleDto.DocumentUploader,
+                exhibitDocuments.Select(x => x.Value).ToList()).ConfigureAwait(false);
+
+            var responseData = new List<MultipleDocumentsUploadedFileDataDto>();
+            if (addIndictmentDocumentsResponse.IsSuccess && addIndictmentDocumentsResponse.Data is not null)
+            {
+                responseData.AddRange(addIndictmentDocumentsResponse.Data);
+            }
+
+            if (addExhibitDocumentsResponse.IsSuccess && addExhibitDocumentsResponse.Data is not null)
+            {
+                responseData.AddRange(addExhibitDocumentsResponse.Data);
+            }
+
+            if (documentsNotDownloaded.Any())
+            {
+                responseData.AddRange(documentsNotDownloaded.Select(x => new MultipleDocumentsUploadedFileDataDto
+                {
+                    CmsDocumentId = x.Key,
+                    ErrorCode = "Document could not be downloaded from CMS.",
+                    ErrorMessage = "Document could not be downloaded from CMS.",
+                    UploadStatus = false,
+                    Filename = bundleMaterials.Any(bm => bm.DocumentId == x.Key && !string.IsNullOrWhiteSpace(bm.OriginalFileName)) ? bundleMaterials.First(bm => bm.DocumentId == x.Key).OriginalFileName ?? "Unknown" : "Unknown",
+                }));
+            }
+
+            return HttpReturnResultDto<List<MultipleDocumentsUploadedFileDataDto>>.Success(HttpStatusCode.Created, responseData);
         }
         catch (Exception ex)
         {
             var message = $"Service encountered an error: {ex.Message}";
             this.logger.LogError($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(UploadDocumentsFromCmsBundleService)}.{nameof(this.UploadDocumentsFromCmsBundleAsync)}: Milestone - {message}");
-            return HttpReturnResultDto<string>.Fail(HttpStatusCode.InternalServerError, message);
+            return HttpReturnResultDto<List<MultipleDocumentsUploadedFileDataDto>>.Fail(HttpStatusCode.InternalServerError, message);
         }
     }
 }

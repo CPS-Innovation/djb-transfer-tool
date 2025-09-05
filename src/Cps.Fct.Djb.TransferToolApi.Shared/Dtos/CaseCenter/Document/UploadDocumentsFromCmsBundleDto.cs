@@ -19,14 +19,15 @@ public record UploadDocumentsFromCmsBundleDto : AuthenticatedUserDto
     [Required]
     [JsonProperty("cmsCaseId")]
     [JsonIgnore]
-    public string CmsCaseId { get; set; } = string.Empty;
+    public int CmsCaseId { get; set; } = default!;
 
     /// <summary>
-    /// Gets the unique identifier for the case in Case Center.
+    /// Gets the unique identifier for the bundle in cms.
     /// </summary>
     [Required]
-    [JsonProperty("caseid")]
-    public string CaseId { get; set; } = string.Empty;
+    [JsonProperty("cmsBundleId")]
+    [JsonIgnore]
+    public int CmsBundleId { get; set; } = default!;
 
     /// <summary>
     /// Gets the document uploader.

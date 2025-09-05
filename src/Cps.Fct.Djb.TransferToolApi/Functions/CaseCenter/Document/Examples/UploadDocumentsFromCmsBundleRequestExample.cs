@@ -24,6 +24,7 @@ public class UploadDocumentsFromCmsBundleRequestExample
         var exampleRequest = new UploadDocumentsFromCmsBundleRequest
         {
             CmsCaseId = 123456,
+            CmsBundleId = 1234,
             CmsUsername = "cms.user@cps.gov.uk",
         };
 

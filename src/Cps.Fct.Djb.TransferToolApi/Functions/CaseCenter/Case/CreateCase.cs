@@ -104,9 +104,10 @@ public class CreateCase(ILogger<CreateCase> logger,
                 return request.CreateResponse(createCaseResult.StatusCode);
             }
 
-            var responseData = request.CreateResponse(HttpStatusCode.OK);
-            await responseData.WriteAsJsonAsync(createCaseResult.Data).ConfigureAwait(false);
-            return responseData;
+            var response = request.CreateResponse(HttpStatusCode.OK);
+            var responseData = this.autoMapper.Map<CaseCreatedResponse>(createCaseResult.Data);
+            await response.WriteAsJsonAsync(responseData).ConfigureAwait(false);
+            return response;
         }
         catch (Exception ex)
         {

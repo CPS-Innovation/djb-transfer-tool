@@ -91,11 +91,11 @@ public static class FileResponseExtensions
     }
 
     /// <summary>
-    /// Converts the file content from the FileResponse to a Base64 encoded string.
+    /// Returns the file content from the FileResponse as a byte array.
     /// </summary>
     /// <param name="fileResponse">FileResponse.</param>
-    /// <returns>A base64 encoded string.</returns>
-    public static async Task<string> ToBase64StringAsync(this FileResponse fileResponse)
+    /// <returns>A byte array.</returns>
+    public static async Task<byte[]> ToByteArrayAsync(this FileResponse fileResponse)
     {
         using var stream = fileResponse.Stream;
         if (stream.CanSeek && stream.Position != 0)
@@ -105,7 +105,6 @@ public static class FileResponseExtensions
 
         using var memoryStream = new MemoryStream();
         await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
-        byte[] bytes = memoryStream.ToArray();
-        return Convert.ToBase64String(bytes);
+        return memoryStream.ToArray();
     }
 }

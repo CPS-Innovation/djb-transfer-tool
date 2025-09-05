@@ -11,9 +11,11 @@ using Cps.Fct.Djb.TransferTool.Shared.Constants;
 using Cps.Fct.Djb.TransferToolApi.Functions;
 using Cps.Fct.Djb.TransferToolApi.Functions.CaseCenter.Document.Examples;
 using Cps.Fct.Djb.TransferToolApi.Models.Requests.Document;
+using Cps.Fct.Djb.TransferToolApi.Models.Responses.Case;
 using Cps.Fct.Djb.TransferToolApi.Models.Responses.Document;
 using Cps.Fct.Djb.TransferToolApi.Services.Interfaces;
 using Cps.Fct.Djb.TransferToolApi.Services.Interfaces.Document;
+using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.CaseCenter.Document;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
@@ -77,37 +79,36 @@ public class UploadDocumentsFromCmsBundle(ILogger<UploadDocumentsFromCmsBundle> 
                 return unauthorizedResponse;
             }
 
-            throw new NotImplementedException();
+            var cmsAuthValues = this.GetCmsAuthValues(request);
 
-            //var cmsAuthValues = this.GetCmsAuthValues(request);
+            var requestBodyPayload = await this.TryReadRequestBodyAsync<UploadDocumentsFromCmsBundleRequest>(request).ConfigureAwait(false);
 
-            //var requestBodyPayload = await this.TryReadRequestBodyAsync<CreateCaseRequest>(request).ConfigureAwait(false);
+            if (requestBodyPayload == null)
+            {
+                var badRequestResponse = request.CreateResponse(HttpStatusCode.BadRequest);
+                await badRequestResponse.WriteStringAsync("Invalid or missing request body.").ConfigureAwait(false);
+                return badRequestResponse;
+            }
 
-            //if (requestBodyPayload == null)
-            //{
-            //    var badRequestResponse = request.CreateResponse(HttpStatusCode.BadRequest);
-            //    await badRequestResponse.WriteStringAsync("Invalid or missing request body.").ConfigureAwait(false);
-            //    return badRequestResponse;
-            //}
+            var validateModelResult = await this.validationService.ValidateModelAsync(requestBodyPayload).ConfigureAwait(false);
 
-            //var validateModelResult = await this.validationService.ValidateModelAsync(requestBodyPayload).ConfigureAwait(false);
+            if (!validateModelResult.IsSuccess)
+            {
+                return await this.BuildBadRequestResponseFromValidationAsync(request, validateModelResult.Data).ConfigureAwait(false);
+            }
 
-            //if (!validateModelResult.IsSuccess)
-            //{
-            //    return await this.BuildBadRequestResponseFromValidationAsync(request, validateModelResult.Data).ConfigureAwait(false);
-            //}
+            var uploadDocumentsFromCmsBundleDto = this.autoMapper.Map<UploadDocumentsFromCmsBundleDto>((requestBodyPayload, cmsAuthValues));
+            var uploadDocumentsResult = await this.uploadDocumentsFromCmsBundleService.UploadDocumentsFromCmsBundleAsync(uploadDocumentsFromCmsBundleDto).ConfigureAwait(false);
 
-            //var createCaseDto = this.autoMapper.Map<CreateCaseDto>((requestBodyPayload, cmsAuthValues));
-            //var createCaseResult = await this.createCaseCenterCaseService.CreateCaseAsync(createCaseDto).ConfigureAwait(false);
+            if (!uploadDocumentsResult.IsSuccess)
+            {
+                return request.CreateResponse(uploadDocumentsResult.StatusCode);
+            }
 
-            //if (!createCaseResult.IsSuccess)
-            //{
-            //    return request.CreateResponse(createCaseResult.StatusCode);
-            //}
-
-            //var responseData = request.CreateResponse(HttpStatusCode.OK);
-            //await responseData.WriteAsJsonAsync(createCaseResult.Data).ConfigureAwait(false);
-            //return responseData;
+            var response = request.CreateResponse(HttpStatusCode.OK);
+            var responseData = this.autoMapper.Map<DocumentsUploadedFromCmsBundleResponse>(uploadDocumentsResult.Data);
+            await response.WriteAsJsonAsync(responseData).ConfigureAwait(false);
+            return response;
         }
         catch (Exception ex)
         {
