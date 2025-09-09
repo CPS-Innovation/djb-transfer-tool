@@ -144,6 +144,7 @@ stages:
                   -CaseCenter__ExhibitsSectionName "Exhibits"   
                   -CaseCenter__AreaCaseTemplateGroups__templateId  "4425c1da76a3410e8932bf998bb06d41",
                   -CaseCenter__AreaCaseTemplateGroups__courtCodes ["HULLCC"]
+                  -CaseCenterApiClient__RelativePath__ApiTest "OutBundle/ApiTest"
 
 - stage: Staging
   displayName: Deploy Staging
@@ -197,6 +198,7 @@ stages:
                       -CaseCenter__ExhibitsSectionName "Exhibits"   
                       -CaseCenter__AreaCaseTemplateGroups__templateId  "4425c1da76a3410e8932bf998bb06d41",
                       -CaseCenter__AreaCaseTemplateGroups__courtCodes ["HULLCC"]
+                      -CaseCenterApiClient__RelativePath__ApiTest "OutBundle/ApiTest"
                       
 # - stage: Production
 #   displayName: Deploy Production
