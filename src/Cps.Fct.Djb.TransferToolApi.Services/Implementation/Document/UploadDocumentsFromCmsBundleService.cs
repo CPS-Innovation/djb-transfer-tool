@@ -135,7 +135,7 @@ public class UploadDocumentsFromCmsBundleService : IUploadDocumentsFromCmsBundle
 
                     return new KeyValuePair<int, UploadMultipleDocumentsFileDataDto?>(bm.DocumentId, new UploadMultipleDocumentsFileDataDto()
                     {
-                        FileName = fileName,
+                        FileName = bm.OriginalFileName ?? string.Empty,
                         ContentType = contentType,
                         Content = fileContents,
                         Base64EncodedContent = base64Content,
@@ -157,9 +157,9 @@ public class UploadDocumentsFromCmsBundleService : IUploadDocumentsFromCmsBundle
             var documentsNotDownloaded = documentsFromMds
                 .Where(x => x.Value is null);
             var indictmentDocuments = documentsFromMds
-                .Where(x => x.Value is not null && x.Value.FileName.StartsWith("Indictment/", StringComparison.InvariantCultureIgnoreCase));
+                .Where(x => x.Value is not null && x.Value.FileName.StartsWith("Indictment", StringComparison.InvariantCultureIgnoreCase));
             var exhibitDocuments = documentsFromMds
-                .Where(x => x.Value is not null && !x.Value.FileName.StartsWith("Indictment/", StringComparison.InvariantCultureIgnoreCase));
+                .Where(x => x.Value is not null && !x.Value.FileName.StartsWith("Indictment", StringComparison.InvariantCultureIgnoreCase));
 
             getAdminAuthTokenResponse = await caseCenterApiClient.GetAuthTokenAsync().ConfigureAwait(false);
 
@@ -178,7 +178,7 @@ public class UploadDocumentsFromCmsBundleService : IUploadDocumentsFromCmsBundle
                 indictmentDocuments.Select(x => x.Value).ToList()).ConfigureAwait(false);
 
             var addExhibitDocumentsResponse = await caseCenterApiClient
-                .AddIndictmentsToCaseSectionIdAsync(
+                .AddExhibitsToCaseSectionIdAsync(
                 inputUploadDocumentsFromCmsBundleDto.CaseCenterAuthToken,
                 caseCenterCaseId,
                 inputUploadDocumentsFromCmsBundleDto.DocumentUploader,

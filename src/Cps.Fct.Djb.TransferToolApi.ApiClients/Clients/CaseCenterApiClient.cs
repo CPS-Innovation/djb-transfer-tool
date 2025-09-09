@@ -457,6 +457,117 @@ public class CaseCenterApiClient : ICaseCenterApiClient
             foreach (var file in filesToUpload)
             {
                 var fileContent = new ByteArrayContent(file.Content);
+                // fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
+                form.Add(fileContent, "uploadFiles", file.FileName);
+            }
+
+            // Add extra fields
+            form.Add(new StringContent(false.ToString().ToLowerInvariant()), "bookmarkedPDF");
+
+            foreach (var file in filesToUpload)
+            {
+                form.Add(new StringContent(file.Checksum), "checkSums");
+            }
+
+            var response = await this.SendRequestAsync<object>(
+                HttpMethod.Post,
+                path: path,
+                payload: form,
+                contentType: ApiContentTypeConstants.MultipartFormData,
+                apiKey: authenticationToken).ConfigureAwait(false);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return HttpReturnResultDto<List<MultipleDocumentsUploadedFileDataDto>>.Fail(response.StatusCode, response.ReasonPhrase);
+            }
+
+            string uploadedDocumentsResponse = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            if (string.IsNullOrWhiteSpace(uploadedDocumentsResponse))
+            {
+                return HttpReturnResultDto<List<MultipleDocumentsUploadedFileDataDto>>.Fail(HttpStatusCode.InternalServerError, "No case center section returned");
+            }
+
+            var uploadedDocuments = JsonConvert.DeserializeObject<List<UploadDocumentResponse>>(uploadedDocumentsResponse);
+
+            var responsePayload = uploadedDocuments?.Select(d => new MultipleDocumentsUploadedFileDataDto
+            {
+                CaseCenterDocumentId = d.DocumentId ?? string.Empty,
+                CmsDocumentId = filesToUpload.FirstOrDefault(x => x.FileName.Equals(d.Filename, StringComparison.InvariantCultureIgnoreCase))?.CmsDocumentId ?? 0,
+                ErrorCode = d.UploadError?.ErrorCode ?? string.Empty,
+                ErrorMessage = d.UploadError?.ErrorMessage ?? string.Empty,
+                Filename = d.Filename ?? string.Empty,
+                UploadStatus = d.UploadStatus,
+            }).ToList() ?? new List<MultipleDocumentsUploadedFileDataDto>();
+
+            this.logger.LogInformation($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(CaseCenterApiClient)}.{nameof(this.AddIndictmentsToCaseSectionIdAsync)}: completed in [{sw.Elapsed}].");
+            return HttpReturnResultDto<List<MultipleDocumentsUploadedFileDataDto>>.Success(response.StatusCode, responsePayload);
+        }
+        catch (Exception ex)
+        {
+            var message = $"Case Center API client encountered an error: {ex.Message}";
+            this.logger.LogError($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(CaseCenterApiClient)}.{nameof(this.AddIndictmentsToCaseSectionIdAsync)}: {message}");
+            return HttpReturnResultDto<List<MultipleDocumentsUploadedFileDataDto>>.Fail(HttpStatusCode.InternalServerError, message);
+        }
+    }    
+
+    /// <summary>
+    /// Uploads multiple files to the exhibits section of the master bundle in the specified case.
+    /// Returns HttpReturnResultDto with a section id from case center if successful.
+    ///   - id is non-null if success
+    ///   - id is null if failure (then statusCode is the server's code or 500 if exception).
+    /// </summary>
+    /// <param name="authenticationToken">The authentication token for the operation.</param>
+    /// <param name="caseId">The case center case id.</param>
+    /// <param name="username">The username to impersonate.</param>
+    /// <param name="filesToUpload">The files to upload id.</param>
+    /// <returns>
+    /// A HttpResponseMessage.
+    /// </returns>
+    public async Task<HttpReturnResultDto<List<MultipleDocumentsUploadedFileDataDto>>> AddExhibitsToCaseSectionIdAsync(string authenticationToken, string caseId, string username, IEnumerable<UploadMultipleDocumentsFileDataDto> filesToUpload)
+    {
+        try
+        {
+            var sw = Stopwatch.StartNew();
+            this.logger.LogInformation($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(CaseCenterApiClient)}.{nameof(this.AddIndictmentsToCaseSectionIdAsync)}: starting.");
+
+            Requires.NotNull(this.clientEndpointOptions);
+
+            Requires.NotNullOrWhiteSpace(authenticationToken);
+            Requires.NotNullOrWhiteSpace(caseId);
+
+            var getBundleIdResponse = await this.GetBundleIdAsync(authenticationToken, caseId, caseCenterOptions.MasterBundleName).ConfigureAwait(false);
+            if (!getBundleIdResponse.IsSuccess || string.IsNullOrWhiteSpace(getBundleIdResponse.Data))
+            {
+                var message = $"Failed to get bundle id for case id '{caseId}'. Status code: {getBundleIdResponse.StatusCode}, Message: {getBundleIdResponse.Message}";
+                this.logger.LogError($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(CaseCenterApiClient)}.{nameof(this.AddIndictmentsToCaseSectionIdAsync)}: {message}");
+                return HttpReturnResultDto<List<MultipleDocumentsUploadedFileDataDto>>.Fail(getBundleIdResponse.StatusCode, message);
+            }
+            var bundleId = getBundleIdResponse.Data;
+
+            var getSectionIdResponse = await this.GetSectionIdAsync(authenticationToken, caseId, bundleId, caseCenterOptions.ExhibitsSectionName).ConfigureAwait(false);
+            if (!getSectionIdResponse.IsSuccess || string.IsNullOrWhiteSpace(getSectionIdResponse.Data))
+            {
+                var message = $"Failed to get section id for case id '{caseId}' and bundle id '{bundleId}'. Status code: {getSectionIdResponse.StatusCode}, Message: {getSectionIdResponse.Message}";
+                this.logger.LogError($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(CaseCenterApiClient)}.{nameof(this.AddIndictmentsToCaseSectionIdAsync)}: {message}");
+                return HttpReturnResultDto<List<MultipleDocumentsUploadedFileDataDto>>.Fail(getSectionIdResponse.StatusCode, message);
+            }
+            var sectionId = getSectionIdResponse.Data;
+
+            var path = string.Format(
+                CultureInfo.InvariantCulture,
+                this.clientEndpointOptions.RelativePath[CaseCenterConfigConstants.CaseCenterApiUploadMultipleDocumentsToCasePathName],
+                Uri.EscapeDataString(caseId),
+                true,
+                Uri.EscapeDataString(sectionId),
+                Uri.EscapeDataString(username)
+                );
+
+            using var form = new MultipartFormDataContent();
+
+            // Add each file
+            foreach (var file in filesToUpload)
+            {
+                var fileContent = new ByteArrayContent(file.Content);
                 fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
                 form.Add(fileContent, "uploadFiles", file.FileName);
             }
@@ -493,8 +604,8 @@ public class CaseCenterApiClient : ICaseCenterApiClient
             {
                 CaseCenterDocumentId = d.DocumentId ?? string.Empty,
                 CmsDocumentId = filesToUpload.FirstOrDefault(x => x.FileName.Equals(d.Filename, StringComparison.InvariantCultureIgnoreCase))?.CmsDocumentId ?? 0,
-                ErrorCode = d.UploadError.ErrorCode ?? string.Empty,
-                ErrorMessage = d.UploadError.ErrorMessage ?? string.Empty,
+                ErrorCode = d.UploadError?.ErrorCode ?? string.Empty,
+                ErrorMessage = d.UploadError?.ErrorMessage ?? string.Empty,
                 Filename = d.Filename ?? string.Empty,
                 UploadStatus = d.UploadStatus,
             }).ToList() ?? new List<MultipleDocumentsUploadedFileDataDto>();

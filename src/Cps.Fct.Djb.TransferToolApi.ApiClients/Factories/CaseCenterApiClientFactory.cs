@@ -5,6 +5,7 @@
 namespace Cps.Fct.Djb.TransferToolApi.ApiClients.Factories;
 
 using System.Net.Http.Headers;
+using Cps.Fct.Djb.TransferTool.Shared.Constants;
 using Cps.Fct.Djb.TransferToolApi.ApiClients.Clients;
 using Cps.Fct.Djb.TransferToolApi.ApiClients.Clients.Interfaces;
 using Cps.Fct.Djb.TransferToolApi.ApiClients.ConfigOptions;
@@ -57,6 +58,8 @@ public class CaseCenterApiClientFactory : ICaseCenterApiClientFactory
     {
         if (this.clientOptions.BaseAddress is null || !this.clientOptions.BaseAddress.IsAbsoluteUri)
         {
+            var message = $"Missing or invalid Case Center base address in configuration. CaseCenterApiClient.BaseAddres: '{this.clientOptions.BaseAddress}'";
+            this.logger.LogError($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(CaseCenterApiClientFactory)}.{nameof(this.Create)}: {message}");
             throw new InvalidOperationException("Missing or invalid Case Center base address in configuration.");
         }
 

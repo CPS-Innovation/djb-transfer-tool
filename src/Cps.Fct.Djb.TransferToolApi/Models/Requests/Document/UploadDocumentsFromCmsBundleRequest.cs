@@ -27,9 +27,9 @@ public record UploadDocumentsFromCmsBundleRequest
     public int CmsBundleId { get; init; } = default!;
 
     /// <summary>
-    /// Gets CmsUsername.
+    /// Gets DocumentUploader.
     /// </summary>
     [Required]
-    [JsonProperty("cmsUsername")]
-    public string CmsUsername { get; init; } = string.Empty;
+    [JsonProperty("documentUploader")]
+    public string DocumentUploader { get; init; } = string.Empty;
 }
