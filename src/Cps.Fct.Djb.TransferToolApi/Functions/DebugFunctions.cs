@@ -116,6 +116,39 @@ public class DebugFunctions(ILogger<DebugFunctions> logger,
     }
 
     /// <summary>
+    /// CallAnonymousCaseCenterTestApi.
+    /// </summary>
+    /// <param name="request">The HTTP request containing the payload for call.</param>
+    /// <returns>
+    /// An <see cref="HttpResponseData"/> containing:
+    /// - 200 OK.
+    /// </returns>
+    [Function($"{nameof(DebugFunctions)}CallAnonymousCaseCenterTestApi")]
+    [OpenApiResponseWithBody(HttpStatusCode.OK, "application/json", typeof(string), Description = "Case center case id.")]
+    public async Task<HttpResponseData> CallAnonymousCaseCenterTestApi(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "debug/anonymous/casecenter/test/api")] HttpRequestData request)
+    {
+        try
+        {
+            var getCaseCenterCaseIdResponse = await this.debugService.CallCaseCenterTestApiAsync().ConfigureAwait(false);
+
+            if (!getCaseCenterCaseIdResponse.IsSuccess)
+            {
+                return request.CreateResponse(getCaseCenterCaseIdResponse.StatusCode);
+            }
+
+            var responseData = request.CreateResponse(HttpStatusCode.OK);
+            await responseData.WriteAsJsonAsync(getCaseCenterCaseIdResponse.Data).ConfigureAwait(false);
+            return responseData;
+        }
+        catch (Exception ex)
+        {
+            this.logger.LogError($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(DebugFunctions)}CallAnonymousCaseCenterTestApi: Milestone - Function encountered an error: {ex.Message}");
+            return request.CreateResponse(HttpStatusCode.InternalServerError);
+        }
+    }
+
+    /// <summary>
     /// CallFunctionKeyCaseCenter.
     /// </summary>
     /// <param name="request">The HTTP request containing the payload for call.</param>

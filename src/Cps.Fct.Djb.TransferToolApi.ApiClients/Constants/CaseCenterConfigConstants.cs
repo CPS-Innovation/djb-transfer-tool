@@ -20,6 +20,11 @@ public static class CaseCenterConfigConstants
     public const string CaseCenterApiClientConfigurationName = "CaseCenterApiClient";
 
     /// <summary>
+    /// Name of the Case Center Api path to Api Test.
+    /// </summary>
+    public const string CaseCenterApiTestPathName = "ApiTest";
+
+    /// <summary>
     /// Name of the Case Center Api path to GetToken.
     /// </summary>
     public const string CaseCenterApiGetTokenPathName = "GetToken";

@@ -58,6 +58,43 @@ public class CaseCenterApiClient : ICaseCenterApiClient
     }
 
     /// <summary>
+    /// Calls the case center test api.
+    /// </summary>
+    /// <returns>Returns the test message if success else empty.</returns>
+    public async Task<HttpReturnResultDto<string>> CallCaseCenterTestApiAsync()
+    {
+        try
+        {
+            var sw = Stopwatch.StartNew();
+            this.logger.LogInformation($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(CaseCenterApiClient)}.{nameof(this.CallCaseCenterTestApiAsync)}: starting.");
+
+            var path = this.clientEndpointOptions.RelativePath[CaseCenterConfigConstants.CaseCenterApiTestPathName];
+
+            var response = await this.httpClient.GetAsync(path).ConfigureAwait(false);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return HttpReturnResultDto<string>.Fail(response.StatusCode, response.ReasonPhrase);
+            }
+
+            var successMessage = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            if (string.IsNullOrWhiteSpace(successMessage))
+            {
+                return HttpReturnResultDto<string>.Fail(HttpStatusCode.InternalServerError, "No success message returned.");
+            }
+
+            this.logger.LogInformation($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(CaseCenterApiClient)}.{nameof(this.CallCaseCenterTestApiAsync)}: completed in [{sw.Elapsed}].");
+            return HttpReturnResultDto<string>.Success(response.StatusCode, successMessage);
+        }
+        catch (Exception ex)
+        {
+            var message = $"Case Center API client encountered an error: {ex.Message}";
+            this.logger.LogError($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(CaseCenterApiClient)}.{nameof(this.CallCaseCenterTestApiAsync)}: {message}");
+            return HttpReturnResultDto<string>.Fail(HttpStatusCode.InternalServerError, message);
+        }
+    }
+
+    /// <summary>
     /// Gets an authentication token from the Case Center API using the provided user credentials.
     /// </summary>
     /// <returns>A HttpReturnResultDto with the authentication token as a payload.</returns>
