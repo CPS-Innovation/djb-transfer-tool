@@ -25,7 +25,7 @@ public class UploadDocumentsFromCmsBundleRequestExample
         {
             CmsCaseId = 123456,
             CmsBundleId = 1234,
-            CmsUsername = "cms.user@cps.gov.uk",
+            DocumentUploader = "cms.user@cps.gov.uk",
         };
 
         this.Examples.Add(OpenApiExampleResolver.Resolve(

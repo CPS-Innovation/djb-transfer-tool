@@ -74,4 +74,19 @@ public interface ICaseCenterApiClient
     /// A HttpResponseMessage.
     /// </returns>
     public Task<HttpReturnResultDto<List<MultipleDocumentsUploadedFileDataDto>>> AddIndictmentsToCaseSectionIdAsync(string authenticationToken, string caseId, string username, IEnumerable<UploadMultipleDocumentsFileDataDto> filesToUpload);
+
+    /// <summary>
+    /// Uploads multiple files to the exhibits section of the master bundle in the specified case.
+    /// Returns HttpReturnResultDto with a section id from case center if successful.
+    ///   - id is non-null if success
+    ///   - id is null if failure (then statusCode is the server's code or 500 if exception).
+    /// </summary>
+    /// <param name="authenticationToken">The authentication token for the operation.</param>
+    /// <param name="caseId">The case center case id.</param>
+    /// <param name="username">The username to impersonate.</param>
+    /// <param name="filesToUpload">The files to upload id.</param>
+    /// <returns>
+    /// A HttpResponseMessage.
+    /// </returns>
+    public Task<HttpReturnResultDto<List<MultipleDocumentsUploadedFileDataDto>>> AddExhibitsToCaseSectionIdAsync(string authenticationToken, string caseId, string username, IEnumerable<UploadMultipleDocumentsFileDataDto> filesToUpload);
 }

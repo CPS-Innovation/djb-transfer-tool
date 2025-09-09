@@ -24,7 +24,7 @@ public class UploadDocumentsFromCmsBundleRequestValidator : AbstractValidator<Up
         this.RuleFor(x => x.CmsBundleId)
             .GreaterThan(0).WithMessage("CmsBundleId is required.");
 
-        this.RuleFor(x => x.CmsUsername)
+        this.RuleFor(x => x.DocumentUploader)
             .NotEmpty().WithMessage("CmsUsername is required.");
     }
 }

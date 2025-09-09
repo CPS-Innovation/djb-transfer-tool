@@ -44,7 +44,7 @@ public class ApiAutoMapperProfile : Profile, IAutoMapperDependencyScanner
             {
                 CmsCaseId = src.createCaseRequest.CmsCaseId,
                 CmsBundleId = src.createCaseRequest.CmsBundleId,
-                DocumentUploader = src.createCaseRequest.CmsUsername,
+                DocumentUploader = src.createCaseRequest.DocumentUploader,
                 CmsClassicAuthCookies = src.cmsAuthValues.CmsCookies,
                 CmsModernAuthToken = src.cmsAuthValues.CmsModernToken,
             });
