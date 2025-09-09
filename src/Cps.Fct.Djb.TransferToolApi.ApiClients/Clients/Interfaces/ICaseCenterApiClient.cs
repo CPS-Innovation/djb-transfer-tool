@@ -14,6 +14,12 @@ using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.Common;
 public interface ICaseCenterApiClient
 {
     /// <summary>
+    /// Calls the case center test api.
+    /// </summary>
+    /// <returns>Returns the test message if success else empty.</returns>
+    public Task<HttpReturnResultDto<string>> CallCaseCenterTestApiAsync();
+
+    /// <summary>
     /// Gets an authentication token from the Case Center API using the provided user credentials.
     /// </summary>
     /// <returns>A HttpReturnResultDto with the authentication token as a payload.</returns>

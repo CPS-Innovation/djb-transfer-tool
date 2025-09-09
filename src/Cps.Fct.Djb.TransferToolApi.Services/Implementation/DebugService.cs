@@ -86,6 +86,36 @@ public class DebugService : IDebugService
     }
 
     /// <summary>
+    /// Calls the case center test api.
+    /// </summary>
+    /// <returns>Returns the test message if success else empty.</returns>
+    public async Task<HttpReturnResultDto<string>> CallCaseCenterTestApiAsync()
+    {
+        try
+        {
+            // get the admin auth token from case center
+            var caseCenterApiClient = this.caseCenterApiClientFactory.Create(string.Empty);
+
+            var callTestApiResponse = await caseCenterApiClient.CallCaseCenterTestApiAsync().ConfigureAwait(false);
+
+            if (!callTestApiResponse.IsSuccess)
+            {
+                return callTestApiResponse;
+            }
+
+            var testApiResponseMessage = callTestApiResponse.Data;
+
+            return HttpReturnResultDto<string>.Success(HttpStatusCode.Created, testApiResponseMessage);
+        }
+        catch (Exception ex)
+        {
+            var message = $"Service encountered an error: {ex.Message}";
+            this.logger.LogError($"{LoggingConstants.DjbTransferToolApiLogPrefix}.{nameof(DebugService)}.{nameof(this.CallCaseCenterTestApiAsync)}: Milestone - {message}");
+            return HttpReturnResultDto<string>.Fail(HttpStatusCode.InternalServerError, message);
+        }
+    }
+
+    /// <summary>
     /// Get cms case summary.
     /// </summary>
     /// <param name="cmsCaseId">cms case id.</param>

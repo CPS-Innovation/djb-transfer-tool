@@ -21,6 +21,12 @@ public interface IDebugService
     public Task<HttpReturnResultDto<string>> GetCaseCenterCaseIdAsync(string caseCenterSourceSystemId);
 
     /// <summary>
+    /// Calls the case center test api.
+    /// </summary>
+    /// <returns>Returns the test message if success else empty.</returns>
+    public Task<HttpReturnResultDto<string>> CallCaseCenterTestApiAsync();
+
+    /// <summary>
     /// Get cms case summary.
     /// </summary>
     /// <param name="cmsCaseId">cms case id.</param>
