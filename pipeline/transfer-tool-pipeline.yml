@@ -37,10 +37,9 @@ stages:
 - stage: Build
   jobs:
   - job: Build
-    pool:
-      vmImage: ubuntu-latest
+    pool: 
+      name: $(buildAgentPool)
     steps:
-
     - task: NuGetToolInstaller@1
       name: 'NuGetToolInstaller'
       displayName: 'NuGet tool installer'
