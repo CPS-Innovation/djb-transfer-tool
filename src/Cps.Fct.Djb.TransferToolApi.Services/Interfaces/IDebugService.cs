@@ -16,9 +16,9 @@ public interface IDebugService
     /// <summary>
     /// Get case center case id.
     /// </summary>
-    /// <param name="caseCenterSourceSystemId">source system case id.</param>
+    /// <param name="cmsCaseId">The cms case id that will be used as the source system id once hashed.</param>
     /// <returns>Returns the case center case id for via the source system case id.</returns>
-    public Task<HttpReturnResultDto<string>> GetCaseCenterCaseIdAsync(string caseCenterSourceSystemId);
+    public Task<HttpReturnResultDto<string>> GetCaseCenterCaseIdAsync(int cmsCaseId);
 
     /// <summary>
     /// Calls the case center test api.

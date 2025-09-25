@@ -8,6 +8,10 @@ using Cps.Fct.Djb.TransferToolApi.ApiClients.ConfigOptions;
 using Cps.Fct.Djb.TransferToolApi.ApiClients.Constants;
 using Cps.Fct.Djb.TransferToolApi.ApiClients.Factories;
 using Cps.Fct.Djb.TransferToolApi.ApiClients.Factories.Interfaces;
+using Cps.Fct.Djb.TransferToolApi.ApiClients.Resolvers;
+using Cps.Fct.Djb.TransferToolApi.ApiClients.Resolvers.Interfaces;
+using Cps.Fct.Djb.TransferToolApi.ApiClients.Utilities;
+using Cps.Fct.Djb.TransferToolApi.ApiClients.Utilities.Interfaces;
 using Cps.Fct.Djb.TransferToolApi.Services.Implementation;
 using Cps.Fct.Djb.TransferToolApi.Services.Implementation.Case;
 using Cps.Fct.Djb.TransferToolApi.Services.Interfaces;
@@ -68,12 +72,15 @@ public static class ServiceCollectionExtensions
 
         // case center api
         services.Configure<CaseCenterOptions>(configuration.GetSection(CaseCenterConfigConstants.CaseCenterConfigurationName));
-        services.PostConfigure<CaseCenterOptions>(CaseCenterOptionsPostConfigure.BuildLookup);
         services.Configure<ClientEndpointOptions>(CaseCenterConfigConstants.CaseCenterApiClientConfigurationName, configuration.GetSection(CaseCenterConfigConstants.CaseCenterApiClientConfigurationName));
+        services.Configure<CmsAreaToCaseCenterDataMappingsOptions>(configuration.GetSection(CaseCenterConfigConstants.CmsAreaToCaseCenterDataMappingsConfigurationName));
+        services.Configure<HashSettingsOptions>(configuration.GetSection(CaseCenterConfigConstants.HashSettingsConfigurationName));
 
         services.AddScoped<ICreateCaseService, CreateCaseService>();
         services.AddScoped<IUploadDocumentsFromCmsBundleService, UploadDocumentsFromCmsBundleService>();
         services.AddSingleton<ICaseCenterApiClientFactory, CaseCenterApiClientFactory>();
+        services.AddSingleton<ICmsAreaToCaseCenterDataMappingResolver, CmsAreaToCaseCenterDataMappingViaOptionsResolver>();
+        services.AddSingleton<IHasherUtility, HasherUtility>();
 
         return services;
     }

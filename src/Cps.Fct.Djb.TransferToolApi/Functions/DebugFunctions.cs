@@ -83,21 +83,21 @@ public class DebugFunctions(ILogger<DebugFunctions> logger,
     /// CallAnonymousCaseCenter.
     /// </summary>
     /// <param name="request">The HTTP request containing the payload for call.</param>
-    /// <param name="sourceSystemCaseId">The source system case id.</param>
+    /// <param name="cmsCaseId">The cms case id, that will be used as the source system case id once hashed.</param>
     /// <returns>
     /// An <see cref="HttpResponseData"/> containing:
     /// - 200 OK.
     /// </returns>
     [Function($"{nameof(DebugFunctions)}CallAnonymousCaseCenter")]
-    [OpenApiParameter("sourceSystemCaseId", In = ParameterLocation.Path, Type = typeof(string), Description = "The source system case id", Required = true)]
+    [OpenApiParameter("cmsCaseId", In = ParameterLocation.Path, Type = typeof(int), Description = "The cms case id, that will be used as the source system case id once hashed", Required = true)]
     [OpenApiResponseWithBody(HttpStatusCode.OK, "application/json", typeof(string), Description = "Case center case id.")]
     public async Task<HttpResponseData> CallAnonymousCaseCenter(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "debug/anonymous/casecenter/{sourceSystemCaseId}")] HttpRequestData request,
-        string sourceSystemCaseId)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "debug/anonymous/casecenter/{cmsCaseId}")] HttpRequestData request,
+        int cmsCaseId)
     {
         try
         {
-            var getCaseCenterCaseIdResponse = await this.debugService.GetCaseCenterCaseIdAsync(sourceSystemCaseId).ConfigureAwait(false);
+            var getCaseCenterCaseIdResponse = await this.debugService.GetCaseCenterCaseIdAsync(cmsCaseId).ConfigureAwait(false);
 
             if (!getCaseCenterCaseIdResponse.IsSuccess)
             {
@@ -152,22 +152,22 @@ public class DebugFunctions(ILogger<DebugFunctions> logger,
     /// CallFunctionKeyCaseCenter.
     /// </summary>
     /// <param name="request">The HTTP request containing the payload for call.</param>
-    /// <param name="sourceSystemCaseId">The source system case id.</param>
+    /// <param name="cmsCaseId">The cms case id, that will be used as the source system case id once hashed.</param>
     /// <returns>
     /// An <see cref="HttpResponseData"/> containing:
     /// - 200 OK.
     /// </returns>
     [Function($"{nameof(DebugFunctions)}CallFunctionKeyCaseCenter")]
-    [OpenApiParameter("sourceSystemCaseId", In = ParameterLocation.Path, Type = typeof(string), Description = "The source system case id", Required = true)]
+    [OpenApiParameter("cmsCaseId", In = ParameterLocation.Path, Type = typeof(int), Description = "The cms case id, that will be used as the source system case id once hashed", Required = true)]
     [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, Name = "x-functions-key", In = OpenApiSecurityLocationType.Header, Description = "The Azure function API Key.")]
     [OpenApiResponseWithBody(HttpStatusCode.OK, "application/json", typeof(string), Description = "Case center case id.")]
     public async Task<HttpResponseData> CallFunctionKeyCaseCenter(
-        [HttpTrigger(AuthorizationLevel.Function, "get", Route = "debug/functionkey/casecenter/{sourceSystemCaseId}")] HttpRequestData request,
-        string sourceSystemCaseId)
+        [HttpTrigger(AuthorizationLevel.Function, "get", Route = "debug/functionkey/casecenter/{cmsCaseId}")] HttpRequestData request,
+        int cmsCaseId)
     {
         try
         {
-            var getCaseCenterCaseIdResponse = await this.debugService.GetCaseCenterCaseIdAsync(sourceSystemCaseId).ConfigureAwait(false);
+            var getCaseCenterCaseIdResponse = await this.debugService.GetCaseCenterCaseIdAsync(cmsCaseId).ConfigureAwait(false);
 
             if (!getCaseCenterCaseIdResponse.IsSuccess)
             {

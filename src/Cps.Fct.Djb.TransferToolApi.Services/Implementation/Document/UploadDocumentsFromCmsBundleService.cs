@@ -56,6 +56,10 @@ public class UploadDocumentsFromCmsBundleService : IUploadDocumentsFromCmsBundle
     {
         try
         {
+            // FXS: Debug to delete
+            var cmsCaseId = 2171117;
+            var cmsBundleId = 8772;
+
             Requires.NotNull(inputUploadDocumentsFromCmsBundleDto);
             Requires.NotNull(inputUploadDocumentsFromCmsBundleDto.CmsCaseId);
             Requires.NotNull(inputUploadDocumentsFromCmsBundleDto.CmsBundleId);
@@ -66,7 +70,7 @@ public class UploadDocumentsFromCmsBundleService : IUploadDocumentsFromCmsBundle
             // get the case from MDS
             var cookie = new MdsCookie(inputUploadDocumentsFromCmsBundleDto.CmsClassicAuthCookies, inputUploadDocumentsFromCmsBundleDto.CmsModernAuthToken);
             var client = this.mdsApiClientFactory.Create(JsonSerializer.Serialize(cookie));
-            var caseSummary = await client.GetCaseSummaryAsync(inputUploadDocumentsFromCmsBundleDto.CmsCaseId).ConfigureAwait(false);
+            var caseSummary = await client.GetCaseSummaryAsync(cmsCaseId).ConfigureAwait(false);
 
             if (caseSummary is null)
             {
@@ -88,7 +92,7 @@ public class UploadDocumentsFromCmsBundleService : IUploadDocumentsFromCmsBundle
 
             inputUploadDocumentsFromCmsBundleDto.CaseCenterAuthToken = getAdminAuthTokenResponse.Data;
 
-            var getCaseIdResponse = await caseCenterApiClient.GetCaseIdAsync(inputUploadDocumentsFromCmsBundleDto.CaseCenterAuthToken, inputUploadDocumentsFromCmsBundleDto.CmsCaseId.ToString(CultureInfo.InvariantCulture)).ConfigureAwait(false);
+            var getCaseIdResponse = await caseCenterApiClient.GetCaseIdAsync(inputUploadDocumentsFromCmsBundleDto.CaseCenterAuthToken, inputUploadDocumentsFromCmsBundleDto.CmsCaseId).ConfigureAwait(false);
 
             if (!getCaseIdResponse.IsSuccess)
             {
@@ -100,7 +104,7 @@ public class UploadDocumentsFromCmsBundleService : IUploadDocumentsFromCmsBundle
             var caseCenterCaseId = getCaseIdResponse.Data;
 
             // get the bundle material from MDS
-            var bundleMaterials = await client.ListBundleMaterialsAsync(inputUploadDocumentsFromCmsBundleDto.CmsCaseId, inputUploadDocumentsFromCmsBundleDto.CmsBundleId).ConfigureAwait(false);
+            var bundleMaterials = await client.ListBundleMaterialsAsync(cmsCaseId, cmsBundleId).ConfigureAwait(false);
 
             if (bundleMaterials is null)
             {

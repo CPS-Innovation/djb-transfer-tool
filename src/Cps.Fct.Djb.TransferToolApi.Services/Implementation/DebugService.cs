@@ -10,6 +10,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Cps.Fct.Djb.TransferTool.Shared.Constants;
 using Cps.Fct.Djb.TransferToolApi.ApiClients.Factories.Interfaces;
+using Cps.Fct.Djb.TransferToolApi.ApiClients.Utilities.Interfaces;
 using Cps.Fct.Djb.TransferToolApi.Services.Interfaces;
 using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.Common;
 using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.Mds;
@@ -45,13 +46,13 @@ public class DebugService : IDebugService
     /// <summary>
     /// Get case center case id.
     /// </summary>
-    /// <param name="caseCenterSourceSystemId">source system case id.</param>
+    /// <param name="cmsCaseId">The cms case id that will be used as the source system id once hashed.</param>
     /// <returns>Returns the case center case id for via the source system case id.</returns>
-    public async Task<HttpReturnResultDto<string>> GetCaseCenterCaseIdAsync(string caseCenterSourceSystemId)
+    public async Task<HttpReturnResultDto<string>> GetCaseCenterCaseIdAsync(int cmsCaseId)
     {
         try
         {
-            Requires.NotNullOrWhiteSpace(caseCenterSourceSystemId);
+            Requires.NotDefault<int>(cmsCaseId);
 
             // get the admin auth token from case center
             var caseCenterApiClient = this.caseCenterApiClientFactory.Create(string.Empty);
@@ -64,9 +65,8 @@ public class DebugService : IDebugService
             }
 
             var caseCenterAuthToken = getAdminAuthTokenResponse.Data;
-
             // get case center case id
-            var getCaseCenterCaseIdResponse = await caseCenterApiClient.GetCaseIdAsync(caseCenterAuthToken, caseCenterSourceSystemId).ConfigureAwait(false);
+            var getCaseCenterCaseIdResponse = await caseCenterApiClient.GetCaseIdAsync(caseCenterAuthToken, cmsCaseId).ConfigureAwait(false);
 
             if (!getCaseCenterCaseIdResponse.IsSuccess)
             {
