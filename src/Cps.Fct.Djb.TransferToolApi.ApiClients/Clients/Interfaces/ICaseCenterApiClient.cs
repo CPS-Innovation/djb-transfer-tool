@@ -45,11 +45,11 @@ public interface ICaseCenterApiClient
     ///   - id is null if failure (then statusCode is the server's code or 500 if exception).
     /// </summary>
     /// <param name="authenticationToken">The authentication token for the operation.</param>
-    /// <param name="sourceSystemCaseId">The source system case id.</param>
+    /// <param name="cmsCaseId">The cms case id that will be used as the source system id once hashed.</param>
     /// <returns>
     /// A HttpResponseMessage.
     /// </returns>
-    public Task<HttpReturnResultDto<string>> GetCaseIdAsync(string authenticationToken, string sourceSystemCaseId);
+    public Task<HttpReturnResultDto<string>> GetCaseIdAsync(string authenticationToken, int cmsCaseId);
 
     /// <summary>
     /// Gets the section id for the specified section from the specified bundle from the specified case.

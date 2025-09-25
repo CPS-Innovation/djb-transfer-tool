@@ -11,6 +11,8 @@ using Cps.Fct.Djb.TransferToolApi.ApiClients.Clients.Interfaces;
 using Cps.Fct.Djb.TransferToolApi.ApiClients.ConfigOptions;
 using Cps.Fct.Djb.TransferToolApi.ApiClients.Constants;
 using Cps.Fct.Djb.TransferToolApi.ApiClients.Factories.Interfaces;
+using Cps.Fct.Djb.TransferToolApi.ApiClients.Resolvers.Interfaces;
+using Cps.Fct.Djb.TransferToolApi.ApiClients.Utilities.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -22,6 +24,8 @@ public class CaseCenterApiClientFactory : ICaseCenterApiClientFactory
     private readonly IHttpClientFactory httpClientFactory;
     private readonly ClientEndpointOptions clientOptions;
     private readonly CaseCenterOptions caseCenterOptions;
+    private readonly ICmsAreaToCaseCenterDataMappingResolver cmsAreaToCaseCenterDataMappingResolver;
+    private readonly IHasherUtility hasher;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CaseCenterApiClientFactory"/> class.
@@ -31,12 +35,16 @@ public class CaseCenterApiClientFactory : ICaseCenterApiClientFactory
     /// <param name="httpClientFactory">http client factory.</param>
     /// <param name="clientOptionsMonitor">client options.</param>
     /// <param name="caseCenterOptionsMonitor">case center options.</param>
+    /// <param name="cmsAreaToCaseCenterDataMappingResolver">ICmsAreaToCaseCenterDataMappingResolver.</param>
+    /// <param name="hasher">IHasher.</param>
     public CaseCenterApiClientFactory(
         ILogger<CaseCenterApiClientFactory> logger,
         ILoggerFactory loggerFactory,
         IHttpClientFactory httpClientFactory,
         IOptionsMonitor<ClientEndpointOptions> clientOptionsMonitor,
-        IOptionsMonitor<CaseCenterOptions> caseCenterOptionsMonitor)
+        IOptionsMonitor<CaseCenterOptions> caseCenterOptionsMonitor,
+        ICmsAreaToCaseCenterDataMappingResolver cmsAreaToCaseCenterDataMappingResolver,
+        IHasherUtility hasher)
     {
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
@@ -47,6 +55,9 @@ public class CaseCenterApiClientFactory : ICaseCenterApiClientFactory
 
         this.caseCenterOptions = caseCenterOptionsMonitor.CurrentValue
             ?? throw new InvalidOperationException("Missing Case Center options.");
+
+        this.cmsAreaToCaseCenterDataMappingResolver = cmsAreaToCaseCenterDataMappingResolver ?? throw new ArgumentNullException(nameof(cmsAreaToCaseCenterDataMappingResolver));
+        this.hasher = hasher ?? throw new ArgumentNullException(nameof(hasher));
     }
 
     /// <summary>
@@ -89,6 +100,8 @@ public class CaseCenterApiClientFactory : ICaseCenterApiClientFactory
                         this.loggerFactory.CreateLogger<CaseCenterApiClient>(),
                         httpClient,
                         this.clientOptions,
-                        this.caseCenterOptions);
+                        this.caseCenterOptions,
+                        this.cmsAreaToCaseCenterDataMappingResolver,
+                        this.hasher);
     }
 }

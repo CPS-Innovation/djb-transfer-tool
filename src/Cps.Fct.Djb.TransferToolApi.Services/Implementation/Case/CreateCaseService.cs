@@ -59,7 +59,8 @@ public class CreateCaseService : ICreateCaseService
             // get the case from MDS
             var cookie = new MdsCookie(inputCreateCaseDto.CmsClassicAuthCookies, inputCreateCaseDto.CmsModernAuthToken);
             var client = this.mdsApiClientFactory.Create(JsonSerializer.Serialize(cookie));
-            var caseSummary = await client.GetCaseSummaryAsync(inputCreateCaseDto.CmsCaseId).ConfigureAwait(false);
+            //var caseSummary = await client.GetCaseSummaryAsync(inputCreateCaseDto.CmsCaseId).ConfigureAwait(false);
+            var caseSummary = await client.GetCaseSummaryAsync(2171117).ConfigureAwait(false);
 
             if (caseSummary is null)
             {
@@ -71,7 +72,7 @@ public class CreateCaseService : ICreateCaseService
             #pragma warning disable SA1101 // Prefix local calls with this
             var caseToCreateDto = inputCreateCaseDto with
             {
-                AreaCrownCourtCode = caseSummary.NextHearingVenueCode ?? string.Empty,
+                AreaName = caseSummary.UnitName ?? string.Empty,
                 CaseUrn = caseSummary.Urn ?? string.Empty,
                 CaseTitle = caseSummary.LeadDefendantFirstNames + " " + caseSummary.LeadDefendantSurname?.ToUpper(),
             };

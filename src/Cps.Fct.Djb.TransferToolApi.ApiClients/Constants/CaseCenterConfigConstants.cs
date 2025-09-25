@@ -15,9 +15,19 @@ public static class CaseCenterConfigConstants
     public const string CaseCenterConfigurationName = "CaseCenter";
 
     /// <summary>
+    /// Name of the cms area mappings configuration section for the Case Center.
+    /// </summary>
+    public const string CmsAreaToCaseCenterDataMappingsConfigurationName = "CmsAreaToCaseCenterDataMappings";
+
+    /// <summary>
     /// Name of the configuration section for the Case Center API client settings.
     /// </summary>
     public const string CaseCenterApiClientConfigurationName = "CaseCenterApiClient";
+
+    /// <summary>
+    /// Name of the configuration section for the hash settings.
+    /// </summary>
+    public const string HashSettingsConfigurationName = "HashSettings";
 
     /// <summary>
     /// Name of the Case Center Api path to Api Test.

@@ -42,9 +42,9 @@ public record CreateCaseDto : AuthenticatedUserDto
     public string CaseTitle { get; init; } = string.Empty;
 
     /// <summary>
-    /// Gets AreaCrownCourtCode.
+    /// Gets AreaName.
     /// </summary>
     [Required]
-    [JsonProperty("areaCrownCourtCode")]
-    public string AreaCrownCourtCode { get; init; } = string.Empty;
+    [JsonProperty("areaName")]
+    public string AreaName { get; init; } = string.Empty;
 }

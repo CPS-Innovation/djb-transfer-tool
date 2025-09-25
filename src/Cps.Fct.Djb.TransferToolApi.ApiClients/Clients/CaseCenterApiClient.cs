@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Net;
 using System.Net.Http.Headers;
-using System.Reflection;
 using System.Text;
 using Azure.Core;
 using Cps.Fct.Djb.TransferTool.Shared.Constants;
@@ -16,6 +15,8 @@ using Cps.Fct.Djb.TransferToolApi.ApiClients.Clients.Interfaces;
 using Cps.Fct.Djb.TransferToolApi.ApiClients.ConfigOptions;
 using Cps.Fct.Djb.TransferToolApi.ApiClients.Constants;
 using Cps.Fct.Djb.TransferToolApi.ApiClients.Models.Response.CaseCenter;
+using Cps.Fct.Djb.TransferToolApi.ApiClients.Resolvers.Interfaces;
+using Cps.Fct.Djb.TransferToolApi.ApiClients.Utilities.Interfaces;
 using Cps.Fct.Djb.TransferToolApi.Shared.Constants;
 using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.Auth;
 using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.CaseCenter.Case;
@@ -26,7 +27,6 @@ using Cps.Fct.Djb.TransferToolApi.Shared.Helpers;
 using Microsoft;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 
 /// <summary>
 /// Class for interacting with the case center admin api.
@@ -37,6 +37,8 @@ public class CaseCenterApiClient : ICaseCenterApiClient
     private readonly HttpClient httpClient;
     private readonly ClientEndpointOptions clientEndpointOptions;
     private readonly CaseCenterOptions caseCenterOptions;
+    private readonly ICmsAreaToCaseCenterDataMappingResolver cmsAreaToCaseCenterDataMappingResolver;
+    private readonly IHasherUtility hasher;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CaseCenterApiClient"/> class.
@@ -45,16 +47,22 @@ public class CaseCenterApiClient : ICaseCenterApiClient
     /// <param name="httpClient">HttpClient.</param>
     /// <param name="clientEndpointOptions">ClientEndpointOptions.</param>
     /// <param name="caseCenterOptions">CaseCenterOptions.</param>
+    /// <param name="cmsAreaToCaseCenterDataMappingResolver">ICmsAreaToCaseCenterDataMappingResolver.</param>
+    /// <param name="hasher">IHasher.</param>
     public CaseCenterApiClient(
         ILogger<CaseCenterApiClient> logger,
         HttpClient httpClient,
         ClientEndpointOptions clientEndpointOptions,
-        CaseCenterOptions caseCenterOptions)
+        CaseCenterOptions caseCenterOptions,
+        ICmsAreaToCaseCenterDataMappingResolver cmsAreaToCaseCenterDataMappingResolver,
+        IHasherUtility hasher)
     {
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         this.clientEndpointOptions = clientEndpointOptions ?? throw new ArgumentNullException(nameof(clientEndpointOptions));
         this.caseCenterOptions = caseCenterOptions ?? throw new ArgumentNullException(nameof(caseCenterOptions));
+        this.cmsAreaToCaseCenterDataMappingResolver = cmsAreaToCaseCenterDataMappingResolver ?? throw new ArgumentNullException(nameof(cmsAreaToCaseCenterDataMappingResolver));
+        this.hasher = hasher ?? throw new ArgumentNullException(nameof(hasher));
     }
 
     /// <summary>
@@ -173,26 +181,29 @@ public class CaseCenterApiClient : ICaseCenterApiClient
             Requires.NotNull(createCaseDto.CmsCaseId);
             Requires.NotNullOrEmpty(createCaseDto.CaseCreator);
             Requires.NotNullOrEmpty(createCaseDto.CaseUrn);
-            Requires.NotNullOrEmpty(createCaseDto.AreaCrownCourtCode);
+            Requires.NotNullOrEmpty(createCaseDto.AreaName);
             Requires.NotNullOrEmpty(createCaseDto.CaseTitle);
 
-            var areaCaseTemplateIds = this.caseCenterOptions.AreaCaseTemplateIds;
             var organisationId = this.caseCenterOptions?.OrganisationId ?? string.Empty;
             var organisationType = this.caseCenterOptions?.OrganisationType ?? string.Empty;
 
-            DictionaryHelper.NotNullOrEmpty(areaCaseTemplateIds);
             Requires.NotNullOrEmpty(organisationId);
             Requires.NotNullOrEmpty(organisationType);
 
-            areaCaseTemplateIds.TryGetValue(createCaseDto.AreaCrownCourtCode, out string? templateId);
+            var cmsAreaMapping = this.cmsAreaToCaseCenterDataMappingResolver.Resolve(createCaseDto.AreaName)
+                ?? throw new InvalidOperationException($"No mapping found for {createCaseDto.AreaName}");
 
-            if (string.IsNullOrWhiteSpace(templateId))
+            if (string.IsNullOrWhiteSpace(cmsAreaMapping.TemplateId))
             {
-                throw new KeyNotFoundException($"No template configured for court code '{createCaseDto.AreaCrownCourtCode}'.");
+                throw new KeyNotFoundException($"No template configured for court code '{createCaseDto.AreaName}'.");
             }
 
-            // FXS: Having to hard code this department id as the using the template id does not work, results in a 404 from Case Center API.
-            var departmentId = "d03a553a5f5e4965849b5d57665e2e87";
+            if (string.IsNullOrWhiteSpace(cmsAreaMapping.DepartmentId))
+            {
+                throw new KeyNotFoundException($"No department configured for court code '{createCaseDto.AreaName}'.");
+            }
+
+            var hashedCaseId = this.hasher.HashAndPrefixCmsCaseId(createCaseDto.CmsCaseId);
 
             var path = string.Format(
                 CultureInfo.InvariantCulture,
@@ -201,10 +212,10 @@ public class CaseCenterApiClient : ICaseCenterApiClient
                 Uri.EscapeDataString(createCaseDto?.CaseCreator ?? string.Empty),
                 Uri.EscapeDataString(organisationId ?? string.Empty),
                 Uri.EscapeDataString(createCaseDto?.CaseTitle ?? string.Empty),
-                Uri.EscapeDataString(templateId ?? string.Empty),
+                Uri.EscapeDataString(cmsAreaMapping.TemplateId ?? string.Empty),
                 Uri.EscapeDataString(organisationType ?? string.Empty),
-                Uri.EscapeDataString(createCaseDto?.CmsCaseId.ToString(CultureInfo.InvariantCulture) ?? string.Empty),
-                Uri.EscapeDataString(departmentId ?? string.Empty));
+                Uri.EscapeDataString(hashedCaseId),
+                Uri.EscapeDataString(cmsAreaMapping.DepartmentId ?? string.Empty));
 
             var response = await this.SendRequestAsync<object>(
                 HttpMethod.Post,
@@ -240,11 +251,11 @@ public class CaseCenterApiClient : ICaseCenterApiClient
     ///   - id is null if failure (then statusCode is the server's code or 500 if exception).
     /// </summary>
     /// <param name="authenticationToken">The authentication token for the operation.</param>
-    /// <param name="sourceSystemCaseId">The source system case id.</param>
+    /// <param name="cmsCaseId">The cms case id that will be used as the source system id once hashed.</param>
     /// <returns>
     /// A HttpResponseMessage.
     /// </returns>
-    public async Task<HttpReturnResultDto<string>> GetCaseIdAsync(string authenticationToken, string sourceSystemCaseId)
+    public async Task<HttpReturnResultDto<string>> GetCaseIdAsync(string authenticationToken, int cmsCaseId)
     {
         try
         {
@@ -253,13 +264,15 @@ public class CaseCenterApiClient : ICaseCenterApiClient
 
             Requires.NotNull(this.clientEndpointOptions);
 
-            Requires.NotNullOrWhiteSpace(sourceSystemCaseId);
+            Requires.NotDefault<int>(cmsCaseId);
             Requires.NotNullOrWhiteSpace(authenticationToken);
+
+            var hashedSourceSystemId = this.hasher.HashAndPrefixCmsCaseId(cmsCaseId);
 
             var path = string.Format(
                 CultureInfo.InvariantCulture,
                 this.clientEndpointOptions.RelativePath[CaseCenterConfigConstants.CaseCenterApiGetCaseIdPathName],
-                Uri.EscapeDataString(sourceSystemCaseId ?? string.Empty));
+                Uri.EscapeDataString(hashedSourceSystemId ?? string.Empty));
 
             var response = await this.SendRequestAsync<object>(
                 HttpMethod.Post,
