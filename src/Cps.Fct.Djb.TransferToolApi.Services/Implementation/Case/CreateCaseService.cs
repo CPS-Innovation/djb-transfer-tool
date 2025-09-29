@@ -59,8 +59,7 @@ public class CreateCaseService : ICreateCaseService
             // get the case from MDS
             var cookie = new MdsCookie(inputCreateCaseDto.CmsClassicAuthCookies, inputCreateCaseDto.CmsModernAuthToken);
             var client = this.mdsApiClientFactory.Create(JsonSerializer.Serialize(cookie));
-            //var caseSummary = await client.GetCaseSummaryAsync(inputCreateCaseDto.CmsCaseId).ConfigureAwait(false);
-            var caseSummary = await client.GetCaseSummaryAsync(2171117).ConfigureAwait(false);
+            var caseSummary = await client.GetCaseSummaryAsync(inputCreateCaseDto.CmsCaseId).ConfigureAwait(false);
 
             if (caseSummary is null)
             {

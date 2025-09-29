@@ -10,7 +10,6 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Cps.Fct.Djb.TransferTool.Shared.Constants;
 using Cps.Fct.Djb.TransferToolApi.ApiClients.Factories.Interfaces;
-using Cps.Fct.Djb.TransferToolApi.ApiClients.Utilities.Interfaces;
 using Cps.Fct.Djb.TransferToolApi.Services.Interfaces;
 using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.Common;
 using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.Mds;
@@ -65,7 +64,7 @@ public class DebugService : IDebugService
             }
 
             var caseCenterAuthToken = getAdminAuthTokenResponse.Data;
-            // get case center case id
+
             var getCaseCenterCaseIdResponse = await caseCenterApiClient.GetCaseIdAsync(caseCenterAuthToken, cmsCaseId).ConfigureAwait(false);
 
             if (!getCaseCenterCaseIdResponse.IsSuccess)

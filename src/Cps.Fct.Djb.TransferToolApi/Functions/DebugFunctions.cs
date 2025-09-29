@@ -39,7 +39,7 @@ public class DebugFunctions(ILogger<DebugFunctions> logger,
     /// - 200 OK.
     /// </returns>
     [Function($"{nameof(DebugFunctions)}CallAnonymous")]
-    public async Task<HttpResponseData> CallAnonymous(
+    public HttpResponseData CallAnonymous(
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "debug/anonymous")] HttpRequestData request)
     {
         try
@@ -64,7 +64,7 @@ public class DebugFunctions(ILogger<DebugFunctions> logger,
     /// </returns>
     [Function($"{nameof(DebugFunctions)}CallFunctionKey")]
     [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, Name = "x-functions-key", In = OpenApiSecurityLocationType.Header, Description = "The Azure Function API Key.")]
-    public async Task<HttpResponseData> CallFunctionKey(
+    public HttpResponseData CallFunctionKey(
         [HttpTrigger(AuthorizationLevel.Function, "get", Route = "debug/functionkey")] HttpRequestData request)
     {
         try

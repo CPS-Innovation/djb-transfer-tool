@@ -16,8 +16,6 @@ using Cps.Fct.Djb.TransferToolApi.Shared.Dtos.Mds;
 using Microsoft;
 using Microsoft.Extensions.Logging;
 using Cps.Fct.Djb.TransferToolApi.Shared.Extensions;
-using System.Globalization;
-using System.Buffers.Text;
 using System.Text;
 using System.Security.Cryptography;
 using System.Collections.Generic;
@@ -56,10 +54,6 @@ public class UploadDocumentsFromCmsBundleService : IUploadDocumentsFromCmsBundle
     {
         try
         {
-            // FXS: Debug to delete
-            var cmsCaseId = 2171117;
-            var cmsBundleId = 8772;
-
             Requires.NotNull(inputUploadDocumentsFromCmsBundleDto);
             Requires.NotNull(inputUploadDocumentsFromCmsBundleDto.CmsCaseId);
             Requires.NotNull(inputUploadDocumentsFromCmsBundleDto.CmsBundleId);
@@ -70,7 +64,7 @@ public class UploadDocumentsFromCmsBundleService : IUploadDocumentsFromCmsBundle
             // get the case from MDS
             var cookie = new MdsCookie(inputUploadDocumentsFromCmsBundleDto.CmsClassicAuthCookies, inputUploadDocumentsFromCmsBundleDto.CmsModernAuthToken);
             var client = this.mdsApiClientFactory.Create(JsonSerializer.Serialize(cookie));
-            var caseSummary = await client.GetCaseSummaryAsync(cmsCaseId).ConfigureAwait(false);
+            var caseSummary = await client.GetCaseSummaryAsync(inputUploadDocumentsFromCmsBundleDto.CmsCaseId).ConfigureAwait(false);
 
             if (caseSummary is null)
             {
@@ -104,7 +98,7 @@ public class UploadDocumentsFromCmsBundleService : IUploadDocumentsFromCmsBundle
             var caseCenterCaseId = getCaseIdResponse.Data;
 
             // get the bundle material from MDS
-            var bundleMaterials = await client.ListBundleMaterialsAsync(cmsCaseId, cmsBundleId).ConfigureAwait(false);
+            var bundleMaterials = await client.ListBundleMaterialsAsync(inputUploadDocumentsFromCmsBundleDto.CmsCaseId, inputUploadDocumentsFromCmsBundleDto.CmsBundleId).ConfigureAwait(false);
 
             if (bundleMaterials is null)
             {
@@ -176,17 +170,25 @@ public class UploadDocumentsFromCmsBundleService : IUploadDocumentsFromCmsBundle
 
             var addIndictmentDocumentsResponse = await caseCenterApiClient
                 .AddIndictmentsToCaseSectionIdAsync(
-                inputUploadDocumentsFromCmsBundleDto.CaseCenterAuthToken,
-                caseCenterCaseId,
-                inputUploadDocumentsFromCmsBundleDto.DocumentUploader,
-                indictmentDocuments.Select(x => x.Value).ToList()).ConfigureAwait(false);
+                    inputUploadDocumentsFromCmsBundleDto.CaseCenterAuthToken,
+                    caseCenterCaseId,
+                    inputUploadDocumentsFromCmsBundleDto.DocumentUploader,
+                    indictmentDocuments
+                        .Select(x => x.Value)
+                        .OfType<UploadMultipleDocumentsFileDataDto>()
+                        .ToList())
+                .ConfigureAwait(false);
 
             var addExhibitDocumentsResponse = await caseCenterApiClient
                 .AddExhibitsToCaseSectionIdAsync(
-                inputUploadDocumentsFromCmsBundleDto.CaseCenterAuthToken,
-                caseCenterCaseId,
-                inputUploadDocumentsFromCmsBundleDto.DocumentUploader,
-                exhibitDocuments.Select(x => x.Value).ToList()).ConfigureAwait(false);
+                    inputUploadDocumentsFromCmsBundleDto.CaseCenterAuthToken,
+                    caseCenterCaseId,
+                    inputUploadDocumentsFromCmsBundleDto.DocumentUploader,
+                    exhibitDocuments
+                        .Select(x => x.Value)
+                        .OfType<UploadMultipleDocumentsFileDataDto>()
+                        .ToList())
+                .ConfigureAwait(false);
 
             var responseData = new List<MultipleDocumentsUploadedFileDataDto>();
             if (addIndictmentDocumentsResponse.IsSuccess && addIndictmentDocumentsResponse.Data is not null)
