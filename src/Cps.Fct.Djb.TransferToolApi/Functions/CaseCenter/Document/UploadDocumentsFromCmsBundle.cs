@@ -11,7 +11,6 @@ using Cps.Fct.Djb.TransferTool.Shared.Constants;
 using Cps.Fct.Djb.TransferToolApi.Functions;
 using Cps.Fct.Djb.TransferToolApi.Functions.CaseCenter.Document.Examples;
 using Cps.Fct.Djb.TransferToolApi.Models.Requests.Document;
-using Cps.Fct.Djb.TransferToolApi.Models.Responses.Case;
 using Cps.Fct.Djb.TransferToolApi.Models.Responses.Document;
 using Cps.Fct.Djb.TransferToolApi.Services.Interfaces;
 using Cps.Fct.Djb.TransferToolApi.Services.Interfaces.Document;

@@ -153,7 +153,7 @@ public abstract class BaseHttpFunction
     }
 
     /// <summary>
-    /// Gets a function's qualified name by extracting the namespace and class name
+    /// Gets a function's qualified name by extracting the namespace and class name.
     /// </summary>
     /// <param name="type">The type.</param>
     /// <returns>The qualified name.</returns>
