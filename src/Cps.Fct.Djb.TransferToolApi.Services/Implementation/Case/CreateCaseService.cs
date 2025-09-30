@@ -71,9 +71,9 @@ public class CreateCaseService : ICreateCaseService
             #pragma warning disable SA1101 // Prefix local calls with this
             var caseToCreateDto = inputCreateCaseDto with
             {
-                AreaName = caseSummary.UnitName ?? string.Empty,
-                CaseUrn = caseSummary.Urn ?? string.Empty,
-                CaseTitle = caseSummary.LeadDefendantFirstNames + " " + caseSummary.LeadDefendantSurname?.ToUpper(),
+                AreaName = caseSummary?.UnitName?.Replace(" ", "_") ?? string.Empty,
+                CaseUrn = caseSummary?.Urn ?? string.Empty,
+                CaseTitle = caseSummary?.LeadDefendantFirstNames + " " + caseSummary?.LeadDefendantSurname?.ToUpper(),
             };
             #pragma warning restore SA1101
 
