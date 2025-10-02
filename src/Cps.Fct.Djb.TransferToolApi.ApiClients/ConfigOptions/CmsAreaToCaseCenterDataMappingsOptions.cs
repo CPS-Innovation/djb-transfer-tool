@@ -9,4 +9,6 @@ namespace Cps.Fct.Djb.TransferToolApi.ApiClients.ConfigOptions;
 /// </summary>
 public class CmsAreaToCaseCenterDataMappingsOptions : Dictionary<string, CmsAreaMapping>
 {
+    public CmsAreaToCaseCenterDataMappingsOptions()
+    : base(StringComparer.OrdinalIgnoreCase) { }
 }
